@@ -115,9 +115,9 @@ conda-forge channel::
 Check the installation section of the documentation_ for more
 information.
 
-.. _documentation: https://mbsantiago.github.io/metamoth/installation.html
+.. _documentation: https://metamoth.readthedocs.io/en/latest/installation.html
 
 Documentation
 =============
 
-The documentation for the ``metamoth`` package is available at https://mbsantiago.github.io/metamoth/.
+The documentation for the ``metamoth`` package is available at https://metamoth.readthedocs.io/en/latest/index.html.
