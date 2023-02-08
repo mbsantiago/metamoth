@@ -34,12 +34,11 @@ metamoth
     :target: https://timothycrosley.github.io/isort/
     :alt: Imports
 
-Metamoth is a Python package for parsing the metadata of
-AudioMoth_ files. AudioMoth
-devices stores the device ID, the date and time of recording, gain settings and
-battery state in as a comment in the metadata header of the audio file. This
-package helps by parsing the metadata and returning an object containing the
-metadata.
+Metamoth is a Python package for parsing the metadata of AudioMoth_ files.
+AudioMoth devices store the device ID, the date and time of recording, gain
+settings and battery state in a comment in the metadata header of the audio
+file. This package helps by **quickly** parsing the metadata and returning an
+object containing the metadata.
 
 .. _AudioMoth: https://www.openacousticdevices.info/audiomoth
 
@@ -72,11 +71,9 @@ file. It has the following attributes:
 * ``battery_state``: the battery state of the AudioMoth that recorded
   the file in Volts.
 
-
-See the documentation of the :ref:`metamoth.parse_metadata` function for more
-information.
-
 You can access any of these attributes as follows::
+
+.. code-block:: python
 
     duration = metadata.duration
     path = metadata.path
@@ -100,6 +97,4 @@ information.
 Documentation
 =============
 
-The documentation for the ``metamoth`` package is available at
-
-https://mbsantiago.github.io/metamoth/
+The documentation for the ``metamoth`` package is available at https://mbsantiago.github.io/metamoth/.
