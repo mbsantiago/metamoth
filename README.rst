@@ -79,6 +79,27 @@ You can access any of these attributes as follows:
     path = metadata.path
     # etc.
 
+Performance
+===========
+
+The ``metamoth`` package is designed to be fast. It extracts
+all the required information from the first few bytes and avoids
+loading the audio data. Thus ``metamoth`` parsing times are
+not affected by the size of the audio file.
+
+The following table shows the parsing times of ``metamoth`` compared to `exif tool`_.
+
++-----------------+-----------------+-----------------+-----------------+
+| File Size (MB)  | metamoth (ms)   | exiftool (ms)   | Speedup         |
++=================+=================+=================+=================+
+| 7.3             | 0.0381          | 80              | ~2000x          |
++-----------------+-----------------+-----------------+-----------------+
+| 44              | 0.0397          | 91.86           | ~2000x          |
++-----------------+-----------------+-----------------+-----------------+
+
+
+.. _exif tool: https://exiftool.org/
+
 Installation
 ============
 
