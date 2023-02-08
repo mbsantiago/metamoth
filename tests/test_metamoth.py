@@ -5,6 +5,7 @@
 import pytest
 from metamoth import metamoth
 
+
 @pytest.fixture
 def response():
     """Sample pytest fixture.

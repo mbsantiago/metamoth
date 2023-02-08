@@ -48,12 +48,21 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	flake8 metamoth tests
+	flake8 src
+
+lint/pylint: ## check style with pylint
+	pylint src
+
+lint/pycodestyle: ## check style with pycodestyle
+	pycodestyle src
+
+lint/pydocstyle: ## check style with pydocstyle
+	pydocstyle src
 
 lint/black: ## check style with black
-	black --check metamoth tests
+	black --check src tests
 
-lint: lint/flake8 lint/black ## check style
+lint: lint/flake8 lint/black lint/pycodestyle lint/pydocstyle lint/pylint ## check style
 
 test: ## run tests quickly with the default Python
 	pytest
