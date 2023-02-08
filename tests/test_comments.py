@@ -27,7 +27,7 @@ def test_parse_comment():
         minute=17,
         second=30,
     )
-    assert comment.timezone == ""
+    assert comment.timezone == "UTC"
     assert comment.audiomoth_id == "0FE081F80FE081F0"
     assert comment.gain == 2
     assert comment.battery_state == 4.5
@@ -40,7 +40,7 @@ def test_get_comment_from_wav_file():
         chunk = parse_into_chunks(wav)
         comment = get_comments(wav, chunk)
 
-    assert comment.timezone == ""
+    assert comment.timezone == "UTC"
     assert comment.audiomoth_id == "0FE081F80FE081F0"
     assert comment.gain == 2
     assert comment.battery_state == 4.5

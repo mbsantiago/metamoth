@@ -14,8 +14,13 @@ from typing import BinaryIO
 
 from metamoth.chunks import Chunk
 
+__all__ = [
+    "AudioMothComment",
+    "parse_comment",
+]
+
 COMMENT_REGEX = re.compile(
-    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) \(UTC([^\)]*)\) by "
+    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) \((UTC[^\)]*)\) by "
     r"AudioMoth ([0-9A-z]{16}) at gain setting (\d) while battery "
     r"state was ([0-9\.]*)V"
 )

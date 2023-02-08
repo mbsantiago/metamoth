@@ -15,7 +15,7 @@ def test_parse_metadata():
     """Test that metadata can be parsed from WAV file."""
     metadata = parse_metadata(TEST_AUDIO)
 
-    assert metadata.timezone == ""
+    assert metadata.timezone == "UTC"
     assert metadata.audiomoth_id == "0FE081F80FE081F0"
     assert metadata.gain == 2
     assert metadata.battery_state == 4.5
@@ -28,3 +28,9 @@ def test_parse_metadata():
     assert metadata.channels == 1
     assert metadata.samples == 3840000
     assert metadata.duration == 20.0
+
+
+def test_metadata_string_representation_is_comment():
+    """Test that metadata string representation is comment."""
+    metadata = parse_metadata(TEST_AUDIO)
+    assert str(metadata) == metadata.comment

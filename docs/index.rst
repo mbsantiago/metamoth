@@ -1,6 +1,9 @@
 Welcome to metamoth's documentation!
 ======================================
 
+Welcome to the documentation for metamoth, a Python package for
+extracting the metadata from AudioMoth recordings.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
