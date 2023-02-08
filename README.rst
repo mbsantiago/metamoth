@@ -6,11 +6,11 @@ metamoth
     :target: https://pypi.python.org/pypi/metamoth/
     :alt: PyPI
 
-.. image:: https://github.com/mbsantiago/metamoth/workflows/Test/badge.svg?branch=develop
+.. image:: https://github.com/mbsantiago/metamoth/workflows/Test/badge.svg?branch=main
     :target: https://github.com/mbsantiago/metamoth/actions?query=workflow%3ATest
     :alt: Test Status
 
-.. image:: https://github.com/mbsantiago/metamoth/workflows/Lint/badge.svg?branch=develop
+.. image:: https://github.com/mbsantiago/metamoth/workflows/Lint/badge.svg?branch=main
     :target: https://github.com/mbsantiago/metamoth/actions?query=workflow%3ALint
     :alt: Lint Status
 
