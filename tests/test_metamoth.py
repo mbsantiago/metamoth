@@ -2,21 +2,29 @@
 
 """Tests for `metamoth` package."""
 
-import pytest
-from metamoth import metamoth
+import os
+
+from metamoth import parse_metadata
+
+PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PACKAGE_DIR, "data")
+TEST_AUDIO = os.path.join(DATA_DIR, "test.wav")
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+def test_parse_metadata():
+    """Test that metadata can be parsed from WAV file."""
+    metadata = parse_metadata(TEST_AUDIO)
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
-
-
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    assert metadata.timezone == ""
+    assert metadata.audiomoth_id == "0FE081F80FE081F0"
+    assert metadata.gain == 2
+    assert metadata.battery_state == 4.5
+    assert metadata.comment == (
+        "Recorded at 19:17:30 06/04/2018 (UTC) by AudioMoth "
+        "0FE081F80FE081F0 at gain setting 2 while battery "
+        "state was 4.5V"
+    )
+    assert metadata.samplerate == 192000
+    assert metadata.channels == 1
+    assert metadata.samples == 3840000
+    assert metadata.duration == 20.0
