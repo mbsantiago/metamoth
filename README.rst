@@ -71,7 +71,7 @@ file. It has the following attributes:
 * ``battery_state``: the battery state of the AudioMoth that recorded
   the file in Volts.
 
-You can access any of these attributes as follows::
+You can access any of these attributes as follows:
 
 .. code-block:: python
 
