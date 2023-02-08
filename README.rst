@@ -91,8 +91,10 @@ conda-forge channel::
 
     conda install -c conda-forge metamoth
 
-Check the :ref:`installation` section of the documentation for more
+Check the installation section of the documentation_ for more
 information.
+
+.. _documentation: https://mbsantiago.github.io/metamoth/installation.html
 
 Documentation
 =============
