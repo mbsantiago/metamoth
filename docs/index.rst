@@ -15,6 +15,7 @@ extracting the metadata from AudioMoth recordings.
    contributing
    authors
    history
+   firmwares
 
 Indices and tables
 ==================

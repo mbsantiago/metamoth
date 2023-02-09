@@ -49,16 +49,18 @@ growing as new features are added to the AudioMoth firmware.
 However, the metadata is not designed to be easily parsed in a programmatic
 way. The data is stored as a string comment making it difficult to retrieve the
 individual metadata fields. Additionally, the comment format is not well
-documented and changes between AudioMoth firmware versions.
+documented and changes between `AudioMoth firmware versions`_.
 
 This package helps by **quickly** parsing the metadata and returning an
 object containing the metadata.
 
-At the moment, the package only supports AudioMoth files recorded with 
-firmware version 1.3.0 or older. Support for newer firmware versions is
+At the moment, the package only supports AudioMoth files recorded with
+firmware version 1.2.0 or older. Support for newer firmware versions is
 planned, see the CONTRIBUTING_ section if you want to help!
 
 .. _CONTRIBUTING: https://github.com/mbsantiago/metamoth/blob/main/CONTRIBUTING.rst
+
+.. _AudioMoth firmware versions: https://metamoth.readthedocs.io/en/latest/firmwares.html
 
 Usage
 =====
