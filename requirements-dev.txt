@@ -1,0 +1,9 @@
+pytest
+pylint
+black
+isort
+flake8
+mypy
+pycodestyle
+pydocstyle
+tox

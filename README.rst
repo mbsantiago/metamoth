@@ -35,8 +35,8 @@ metamoth
     :alt: Imports
 
 Metamoth is a Python package for parsing the metadata of AudioMoth_ files.
-.. _AudioMoth: https://www.openacousticdevices.info/audiomoth
 
+.. _AudioMoth: https://www.openacousticdevices.info/audiomoth
 
 Motivation
 ==========
