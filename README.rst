@@ -35,13 +35,30 @@ metamoth
     :alt: Imports
 
 Metamoth is a Python package for parsing the metadata of AudioMoth_ files.
-AudioMoth devices store the device ID, the date and time of recording, gain
-settings and battery state in a comment in the metadata header of the audio
-file. This package helps by **quickly** parsing the metadata and returning an
-object containing the metadata.
-
 .. _AudioMoth: https://www.openacousticdevices.info/audiomoth
 
+
+Motivation
+==========
+
+AudioMoth devices store valuable information in the audio file header. This
+includes the device ID, the date and time of recording, gain
+settings and battery state. The number of fields in the metadata is
+growing as new features are added to the AudioMoth firmware.
+
+However, the metadata is not designed to be easily parsed in a programmatic
+way. The data is stored as a string comment making it difficult to retrieve the
+individual metadata fields. Additionally, the comment format is not well
+documented and changes between AudioMoth firmware versions.
+
+This package helps by **quickly** parsing the metadata and returning an
+object containing the metadata.
+
+At the moment, the package only supports AudioMoth files recorded with 
+firmware version 1.3.0 or older. Support for newer firmware versions is
+planned, see the CONTRIBUTING_ section if you want to help!
+
+.. _CONTRIBUTING: https://github.com/mbsantiago/metamoth/blob/main/CONTRIBUTING.rst
 
 Usage
 =====
