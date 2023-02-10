@@ -1,5 +1,6 @@
 """Test comments module."""
 import datetime
+from datetime import datetime as dt, timezone as tz, timedelta as td
 import os
 
 from hypothesis import given
@@ -12,6 +13,7 @@ from metamoth.comments import (
     parse_comment_version_1_0,
 )
 from metamoth.enums import BatteryState, GainSetting
+from metamoth.config import Config1_0
 from .firmwares import generate_comment_v1_0
 
 PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,14 +61,14 @@ def test_get_comment_from_wav_file():
 @given(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
-    gain=st.sampled_from(GainSetting),
     battery_state=st.sampled_from(BatteryState),
+    config=st.builds(Config1_0, gain=st.integers(0, 4)),
 )
 def test_can_parse_comment_from_version_1_0(
     time: datetime.datetime,
     serial_number,
-    gain,
     battery_state,
+    config,
 ):
     """Test that comment can be parsed from firmware version 1.0."""
     time = time.replace(microsecond=0)
@@ -74,14 +76,14 @@ def test_can_parse_comment_from_version_1_0(
     comment = generate_comment_v1_0(
         time=time,
         serial_number=serial_number,
-        gain=gain,
         battery_state=battery_state,
+        config=config
     )
     parsed_comment = parse_comment_version_1_0(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone is None
+    assert parsed_comment.timezone == tz(td(0))
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
-    assert parsed_comment.gain == gain.value
+    assert parsed_comment.gain.value == config.gain
     assert parsed_comment.battery_state == battery_state.volts
     assert parsed_comment.comment == comment
