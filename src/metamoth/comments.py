@@ -42,6 +42,10 @@ AudioMothComment = namedtuple(
 )
 
 
+class MessageFormatError(Exception):
+    """Exception raised when the message format is not correct."""
+
+
 def parse_comment(comment: str) -> AudioMothComment:
     """Parse the comment string into a tuple of metadata.
 
@@ -146,3 +150,53 @@ def get_comments(wav: BinaryIO, chunk: Chunk) -> AudioMothComment:
     comment_chunk = get_comment_chunk(chunk)
     comment = read_comment(wav, comment_chunk)
     return parse_comment(comment)
+
+
+COMMENT_REGEX_1_0 = re.compile(
+    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) by "
+    r"AudioMoth ([0-9A-z]{16}) at gain setting (\d) while battery "
+    r"state was [<>]?\s?([0-9\.]*)V"
+)
+
+
+def parse_comment_version_1_0(comment: str):
+    """Parse the comment string of 1.0 firmware.
+
+    Parameters
+    ----------
+    comment : str
+        The comment string.
+
+    Returns
+    -------
+    datetime : datetime.datetime
+        The datetime of the recording.
+
+    timezone:
+        The timezone of the recording.
+
+    audiomoth_id : str
+        The ID of the AudioMoth.
+
+    gain : int
+        The gain setting of the AudioMoth.
+
+    battery_state : float
+        State of the battery in volts at time of recording.
+
+    """
+    match = COMMENT_REGEX_1_0.match(comment)
+    if match is None:
+        print(comment)
+        raise MessageFormatError(
+            "Comment string does not match expected format."
+        )
+
+    return AudioMothComment(
+        datetime=datetime.datetime.strptime(match.group(1), DATE_FORMAT),
+        timezone=None,
+        audiomoth_id=match.group(2),
+        gain=int(match.group(3)),
+        battery_state=float(match.group(4)),
+        comment=comment,
+    )

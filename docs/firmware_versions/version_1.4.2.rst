@@ -41,7 +41,7 @@ Code
 
 .. code-block:: C
 
-    static void setHeaderComment(wavHeader_t *wavHeader, uint32_t currentTime, int8_t timezoneHours, int8_t timezoneMinutes, uint8_t *serialNumber, uint32_t gain, AM_extendedBatteryState_t extendedBatteryState, int32_t temperature, bool supplyVoltageLow, bool switchPositionChanged, uint32_t amplitudeThreshold, AM_filterType_t filterType, uint32_t lowerFilterFreq, uint32_t higherFilterFreq) {
+    static void setHeaderComment(wavHeader_t *wavHeader, uint32_t currentTime, int8_t timezoneHours, int8_t timezoneMinutes, uint8_t *serialNumber, uint32_t gain, AM_extendedBatteryState_t extendedBatteryState, int32_t temperature, bool switchPositionChanged, bool supplyVoltageLow, bool fileSizeLimited, uint32_t amplitudeThreshold, AM_filterType_t filterType, uint32_t lowerFilterFreq, uint32_t higherFilterFreq) {
 
         time_t rawtime = currentTime + timezoneHours * SECONDS_IN_HOUR + timezoneMinutes * SECONDS_IN_MINUTE;
 
@@ -125,21 +125,24 @@ Code
 
         }
 
-        if (supplyVoltageLow || switchPositionChanged) {
+        if (supplyVoltageLow || switchPositionChanged || fileSizeLimited) {
 
             comment += sprintf(comment, " Recording cancelled before completion due to ");
 
-            if (supplyVoltageLow) {
+            if (switchPositionChanged) {
+
+                comment += sprintf(comment, "change of switch position.");
+
+            } else if (supplyVoltageLow) {
 
                 comment += sprintf(comment, "low voltage.");
 
-            } else if (switchPositionChanged) {
+            } else if (fileSizeLimited) {
 
-                comment += sprintf(comment, "change of switch position.");
+                comment += sprintf(comment, "file size limit.");
 
             }
 
         }
 
     }
-
