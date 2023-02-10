@@ -8,11 +8,13 @@ This module is based on the AudioMoth comment format:
 """
 
 import datetime
+from datetime import datetime as dt, timezone as tz, timedelta as td
 import re
 from collections import namedtuple
 from typing import BinaryIO
 
 from metamoth.chunks import Chunk
+from metamoth.enums import GainSetting, BatteryState
 
 __all__ = [
     "AudioMothComment",
@@ -178,10 +180,10 @@ def parse_comment_version_1_0(comment: str):
     audiomoth_id : str
         The ID of the AudioMoth.
 
-    gain : int
+    gain : GainSetting
         The gain setting of the AudioMoth.
 
-    battery_state : float
+    battery_state : BatteryState
         State of the battery in volts at time of recording.
 
     """
@@ -193,10 +195,10 @@ def parse_comment_version_1_0(comment: str):
         )
 
     return AudioMothComment(
-        datetime=datetime.datetime.strptime(match.group(1), DATE_FORMAT),
-        timezone=None,
+        datetime=dt.strptime(match.group(1), DATE_FORMAT),
+        timezone=tz(td(0)),
         audiomoth_id=match.group(2),
-        gain=int(match.group(3)),
+        gain=GainSetting(int(match.group(3))),
         battery_state=float(match.group(4)),
         comment=comment,
     )

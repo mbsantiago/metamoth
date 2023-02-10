@@ -1,15 +1,13 @@
 """Main module."""
-import datetime
 import os
-from dataclasses import dataclass
 from typing import Union
 
 from metamoth.chunks import parse_into_chunks
 from metamoth.comments import get_comments
 from metamoth.mediainfo import get_media_info
+from metamoth.metadata import AMMetadataV1
 
 __all__ = [
-    "Metadata",
     "parse_metadata",
 ]
 
@@ -17,30 +15,7 @@ __all__ = [
 PathLike = Union[os.PathLike, str]
 
 
-@dataclass
-class Metadata:
-    """AudioMoth recording metadata."""
-
-    # pylint: disable=too-many-instance-attributes
-
-    path: str
-    samplerate: int
-    duration: float
-    samples: int
-    channels: int
-    datetime: datetime.datetime
-    timezone: str
-    audiomoth_id: str
-    gain: int
-    battery_state: float
-    comment: str
-
-    def __str__(self):
-        """Return a string representation of the metadata."""
-        return self.comment
-
-
-def parse_metadata(path: PathLike) -> Metadata:
+def parse_metadata(path: PathLike) -> AMMetadataV1:
     """Parse the metadata from an AudioMoth recording.
 
     Parameters
@@ -56,7 +31,7 @@ def parse_metadata(path: PathLike) -> Metadata:
         media_info = get_media_info(wav, riff)
         metadata = get_comments(wav, riff)
 
-    return Metadata(
+    return AMMetadataV1(
         path=str(path),
         samplerate=media_info.samplerate,
         duration=media_info.duration,
@@ -68,4 +43,5 @@ def parse_metadata(path: PathLike) -> Metadata:
         gain=metadata.gain,
         battery_state=metadata.battery_state,
         comment=metadata.comment,
+        firmware_version="1.1.0",
     )

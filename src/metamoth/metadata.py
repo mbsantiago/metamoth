@@ -62,6 +62,7 @@ class AMMetadata:
     """Firmware version of the AudioMoth."""
 
     def __str__(self):
+        """Return a string representation of the metadata."""
         return self.comment
 
 

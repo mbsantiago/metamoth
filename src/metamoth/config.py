@@ -6,7 +6,6 @@ from typing import List
 
 from metamoth.enums import BatteryLevelDisplayType, GainSetting
 
-
 __all__ = [
     "Config1_0",
     "Config1_1_0",
@@ -19,7 +18,6 @@ __all__ = [
     "Config1_7_0",
     "Config1_8_0",
 ]
-
 
 
 @dataclass
