@@ -21,4 +21,4 @@ def test_get_am_artist():
     with open(os.path.join(DATA_DIR, "test_artist.wav"), "rb") as wav:
         riff = parse_into_chunks(wav)
         artist = get_am_artist(wav, riff)
-        assert artist == '243B1F055B2BF663'
+        assert artist == "243B1F055B2BF663"

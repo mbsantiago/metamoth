@@ -20,6 +20,4 @@ def test_get_media_info():
         assert media_info.samplerate_hz == wav.getframerate()
         assert media_info.channels == wav.getnchannels()
         assert media_info.samples == wav.getnframes()
-        assert (
-            media_info.duration_s == wav.getnframes() / wav.getframerate()
-        )
+        assert media_info.duration_s == wav.getnframes() / wav.getframerate()
