@@ -1,97 +1,28 @@
-"""Module with AM Metadata structure for different firmware versions."""
+"""Module with AM Metadata structure for different firmware versions.
+
+This module contains the AMMetadata class and its subclasses for different
+firmware versions.
+"""
 # pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
 from datetime import datetime as dt
 from datetime import timezone as tz
 from typing import Optional
 
-from metamoth.enums import (
-    BatteryState,
-    ExtendedBatteryState,
-    FilterType,
-    GainSetting,
-    RecordingState,
-)
+from metamoth.enums import FilterType, GainSetting, RecordingState
+from metamoth.mediainfo import MediaInfo
 
 __all__ = [
+    "CommentMetadata",
+    "CommentMetadataV1",
+    "CommentMetadataV2",
+    "CommentMetadataV3",
+    "CommentMetadataV4",
+    "CommentMetadataV5",
+    "CommentMetadataV6",
     "AMMetadata",
-    "AMMetadataV1",
-    "AMMetadataV2",
-    "AMMetadataV3",
-    "AMMetadataV4",
-    "AMMetadataV5",
-    "AMMetadataV6",
+    "assemble_metadata",
 ]
-
-
-@dataclass
-class AMMetadata:
-    """Base class for AudioMoth metadata."""
-
-    path: str
-    """Path to the recording."""
-
-    samplerate: int
-    """Sample rate in Hz."""
-
-    duration: float
-    """Duration in seconds."""
-
-    samples: int
-    """Number of samples."""
-
-    channels: int
-    """Number of channels."""
-
-    audiomoth_id: str
-    """AudioMoth ID. This is the serial number of the AudioMoth."""
-
-    datetime: dt
-    """Datetime of the recording."""
-
-    gain: GainSetting
-    """Gain setting of the AudioMoth."""
-
-    comment: str
-    """Full comment string."""
-
-    timezone: tz
-    """Timezone of the recording."""
-
-    firmware_version: str
-    """Firmware version of the AudioMoth."""
-
-    def __str__(self):
-        """Return a string representation of the metadata."""
-        return self.comment
-
-
-@dataclass
-class AMMetadataV1(AMMetadata):
-    """AudioMoth recording metadata.
-
-    Valid for versions 1.0, 1.0.1, 1.1.0, 1.2.0,
-
-    Timezone is always UTC for versions 1.0 and 1.0.1. For versions 1.1.0 and
-    1.2.0, the an UTC hour offset can be set in the AudioMoth settings.
-    """
-
-    battery_state: BatteryState
-    """Battery state of the AudioMoth."""
-
-
-@dataclass
-class AMMetadataV2(AMMetadata):
-    """AudioMoth recording metadata.
-
-    Valid for versions 1.2.1, 1.2.2, 1.3.0
-    """
-
-    battery_state: BatteryState
-    """Battery state of the AudioMoth."""
-
-    recording_state: RecordingState
-    """Recording state of the AudioMoth."""
 
 
 @dataclass
@@ -101,10 +32,10 @@ class FrequencyFilter:
     type: FilterType
     """Filter type applied to the recording."""
 
-    higher_frequency: Optional[int]
+    higher_frequency_hz: Optional[int]
     """Higher filter frequency in Hz. None if no upper filter is applied."""
 
-    lower_frequency: Optional[int]
+    lower_frequency_hz: Optional[int]
     """Lower filter frequency in Hz. None if no lower filter is applied."""
 
 
@@ -116,91 +47,7 @@ class AmplitudeThreshold:
     """True if the amplitude threshold is enabled."""
 
     threshold: int
-    """Amplitude threshold in dB."""
-
-
-@dataclass
-class AMMetadataV3(AMMetadata):
-    """AudioMoth recording metadata.
-
-    Valid for versions 1.4.0, 1.4.1, 1.4.2, 1.4.3, 1.4.4
-    """
-
-    battery_state: ExtendedBatteryState
-    """Battery state of the AudioMoth. This is the extended battery state."""
-
-    recording_state: RecordingState
-    """Recording state of the AudioMoth."""
-
-    temperature: float
-    """Temperature in degrees Celsius."""
-
-    amplitude_threshold: AmplitudeThreshold
-    """Amplitude threshold applied to the recording."""
-
-    frequency_filter: FrequencyFilter
-    """Frequency filter applied to the recording."""
-
-
-@dataclass
-class AMMetadataV4(AMMetadata):
-    """AudioMoth recording metadata.
-
-    Valid for version 1.5.0
-    """
-
-    battery_state: ExtendedBatteryState
-    """Battery state of the AudioMoth. This is the extended battery state."""
-
-    recording_state: RecordingState
-    """Recording state of the AudioMoth."""
-
-    temperature: float
-    """Temperature in degrees Celsius."""
-
-    amplitude_threshold: AmplitudeThreshold
-    """Amplitude threshold applied to the recording."""
-
-    frequency_filter: FrequencyFilter
-    """Frequency filter applied to the recording."""
-
-    deployment_id: Optional[int]
-    """Deployment ID of the AudioMoth."""
-
-    external_microphone: bool
-    """True if an external microphone is connected to the AudioMoth."""
-
-
-@dataclass
-class AMMetadataV5(AMMetadata):
-    """AudioMoth recording metadata.
-
-    Valid for versions 1.6.0, 1.7.0 and 1.7.1
-    """
-
-    battery_state: ExtendedBatteryState
-    """Battery state of the AudioMoth. This is the extended battery state."""
-
-    recording_state: RecordingState
-    """Recording state of the AudioMoth."""
-
-    temperature: float
-    """Temperature in degrees Celsius."""
-
-    amplitude_threshold: AmplitudeThreshold
-    """Amplitude threshold applied to the recording."""
-
-    frequency_filter: FrequencyFilter
-    """Frequency filter applied to the recording."""
-
-    deployment_id: Optional[int]
-    """Deployment ID of the AudioMoth."""
-
-    external_microphone: bool
-    """True if an external microphone is connected to the AudioMoth."""
-
-    minimum_trigger_duration: int
-    """Minimum trigger duration in seconds."""
+    """Amplitude threshold."""
 
 
 @dataclass
@@ -210,7 +57,7 @@ class FrequencyTrigger:
     enabled: bool
     """True if frequency trigger is enabled."""
 
-    centre_frequency: int
+    centre_frequency_hz: int
     """Centre frequency in Hz."""
 
     window_length_shift: int
@@ -218,19 +65,84 @@ class FrequencyTrigger:
 
 
 @dataclass
-class AMMetadataV6(AMMetadata):
-    """AudioMoth recording metadata.
+class CommentMetadata:
+    """Base class for AudioMoth metadata stored in comment."""
 
-    Valid for versions 1.8.0 and 1.8.1
+    audiomoth_id: str
+    """AudioMoth ID. This is the serial number of the AudioMoth."""
+
+    datetime: dt
+    """Datetime of the recording."""
+
+    timezone: tz
+    """Timezone of the recording."""
+
+    gain: GainSetting
+    """Gain setting of the AudioMoth."""
+
+    comment: str
+    """Full comment string."""
+
+    low_battery: bool
+    """True if the battery is low."""
+
+    battery_state_volts: float
+    """Battery state in volts."""
+
+
+@dataclass
+class CommentMetadataV1(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for versions 1.0, 1.0.1, 1.1.0, 1.2.0,
+
+    Timezone is always UTC for versions 1.0 and 1.0.1. For versions 1.1.0 and
+    1.2.0, the an UTC hour offset can be set in the AudioMoth settings.
     """
 
-    battery_state: ExtendedBatteryState
-    """Battery state of the AudioMoth. This is the extended battery state."""
+
+@dataclass
+class CommentMetadataV2(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for versions 1.2.1, 1.2.2, 1.3.0
+    """
 
     recording_state: RecordingState
     """Recording state of the AudioMoth."""
 
-    temperature: float
+
+@dataclass
+class CommentMetadataV3(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for versions 1.4.0, 1.4.1, 1.4.2, 1.4.3, 1.4.4
+    """
+
+    recording_state: RecordingState
+    """Recording state of the AudioMoth."""
+
+    temperature_celsius: float
+    """Temperature in degrees Celsius."""
+
+    amplitude_threshold: AmplitudeThreshold
+    """Amplitude threshold applied to the recording."""
+
+    frequency_filter: FrequencyFilter
+    """Frequency filter applied to the recording."""
+
+
+@dataclass
+class CommentMetadataV4(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for version 1.5.0
+    """
+
+    recording_state: RecordingState
+    """Recording state of the AudioMoth."""
+
+    temperature_celsius: float
     """Temperature in degrees Celsius."""
 
     amplitude_threshold: AmplitudeThreshold
@@ -245,8 +157,120 @@ class AMMetadataV6(AMMetadata):
     external_microphone: bool
     """True if an external microphone is connected to the AudioMoth."""
 
-    minimum_trigger_duration: int
+
+@dataclass
+class CommentMetadataV5(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for versions 1.6.0, 1.7.0 and 1.7.1
+    """
+
+    recording_state: RecordingState
+    """Recording state of the AudioMoth."""
+
+    temperature_celsius: float
+    """Temperature in degrees Celsius."""
+
+    amplitude_threshold: AmplitudeThreshold
+    """Amplitude threshold applied to the recording."""
+
+    frequency_filter: FrequencyFilter
+    """Frequency filter applied to the recording."""
+
+    deployment_id: Optional[int]
+    """Deployment ID of the AudioMoth."""
+
+    external_microphone: bool
+    """True if an external microphone is connected to the AudioMoth."""
+
+    minimum_trigger_duration_seconds: int
     """Minimum trigger duration in seconds."""
 
-    frequency_trigger: FrequencyTrigger
+
+@dataclass
+class CommentMetadataV6(CommentMetadata):
+    """AudioMoth recording metadata in comment string.
+
+    Valid for versions 1.8.0 and 1.8.1
+    """
+
+    recording_state: Optional[RecordingState] = RecordingState.RECORDING_OKAY
+    """Recording state of the AudioMoth."""
+
+    temperature_celsius: Optional[float] = None
+    """Temperature in degrees Celsius."""
+
+    amplitude_threshold: Optional[AmplitudeThreshold] = None
+    """Amplitude threshold applied to the recording."""
+
+    frequency_filter: Optional[FrequencyFilter] = None
+    """Frequency filter applied to the recording."""
+
+    deployment_id: Optional[int] = None
+    """Deployment ID of the AudioMoth."""
+
+    external_microphone: bool = False
+    """True if an external microphone is connected to the AudioMoth."""
+
+    minimum_trigger_duration_seconds: Optional[int] = None
+    """Minimum trigger duration in seconds."""
+
+    frequency_trigger: Optional[FrequencyTrigger] = None
     """Frequency trigger metadata."""
+
+
+@dataclass
+class ExtraMetadata:
+    """Extra metadata."""
+
+    path: str
+    """Path to the recording."""
+
+    firmware_version: str
+    """Firmware version of the AudioMoth."""
+
+
+@dataclass
+class AMMetadata(CommentMetadataV6, MediaInfo, ExtraMetadata):
+    """AudioMoth recording metadata."""
+
+
+def assemble_metadata(
+    path: str,
+    media_info: MediaInfo,
+    comment_metadata: dict,
+    artist: Optional[str],
+) -> AMMetadata:
+    """Assemble the metadata for the recording.
+
+    Parameters
+    ----------
+    media_info : dict
+        Media information dictionary.
+
+    metadata : dict
+        Metadata dictionary.
+
+    artist : str
+        Artist string. Can be None.
+
+    Returns
+    -------
+    metadata : AMMetadataV6
+        Metadata object.
+
+    """
+    if comment_metadata["audiomoth_id"] is None:
+        if artist is None:
+            raise ValueError("No AudioMoth ID found in comment or artist.")
+
+        comment_metadata["audiomoth_id"] = artist
+
+    return AMMetadata(
+        path=path,
+        samplerate_hz=media_info.samplerate_hz,
+        duration_seconds=media_info.duration_seconds,
+        samples=media_info.samples,
+        channels=media_info.channels,
+        **comment_metadata,
+    )

@@ -4,7 +4,7 @@ The WAV file must be a PCM WAV file. The WAV file must have a fmt chunk
 and a data chunk. The WAV file must have a samplerate and channels
 information in the fmt chunk.
 """
-from collections import namedtuple
+from dataclasses import dataclass
 from typing import BinaryIO, Tuple
 
 from metamoth.chunks import Chunk
@@ -14,15 +14,22 @@ __all__ = [
     "get_media_info",
 ]
 
-MediaInfo = namedtuple(
-    "MediaInfo",
-    [
-        "samplerate",
-        "channels",
-        "samples",
-        "duration",
-    ],
-)
+
+@dataclass
+class MediaInfo:
+    """Media information."""
+
+    samplerate_hz: int
+    """Sample rate in Hz."""
+
+    duration_seconds: float
+    """Duration in seconds."""
+
+    samples: int
+    """Number of samples."""
+
+    channels: int
+    """Number of channels."""
 
 
 def read_samplerate_and_channels(
@@ -73,8 +80,8 @@ def get_media_info(wav: BinaryIO, chunk: Chunk) -> MediaInfo:
     samples = data_chunk.size // (channels * 2)
     duration = samples / samplerate
     return MediaInfo(
-        samplerate=samplerate,
+        samplerate_hz=samplerate,
         channels=channels,
         samples=samples,
-        duration=duration,
+        duration_seconds=duration,
     )
