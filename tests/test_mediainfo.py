@@ -1,3 +1,4 @@
+"""Test the media info module."""
 import os
 import wave
 
@@ -16,7 +17,9 @@ def test_get_media_info():
         media_info = get_media_info(wav, chunk)
 
     with wave.open(TEST_AUDIO, "rb") as wav:
-        assert media_info.samplerate == wav.getframerate()
+        assert media_info.samplerate_hz == wav.getframerate()
         assert media_info.channels == wav.getnchannels()
         assert media_info.samples == wav.getnframes()
-        assert media_info.duration == wav.getnframes() / wav.getframerate()
+        assert (
+            media_info.duration_seconds == wav.getnframes() / wav.getframerate()
+        )

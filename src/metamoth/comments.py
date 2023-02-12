@@ -1,91 +1,12 @@
-"""Parse the comment string into a tuple of metadata.
+"""Functions for reading the comment chunk of an AudioMoth WAV file."""
 
-This module is based on the AudioMoth comment format:
-
-    Recorded at 19:17:30 06/04/2018 (UTC) by AudioMoth 0FE081F80FE081F0
-    at gain setting 2 while battery state was 4.5V
-
-"""
-
-import datetime
-from datetime import datetime as dt, timezone as tz, timedelta as td
-import re
-from collections import namedtuple
 from typing import BinaryIO
 
 from metamoth.chunks import Chunk
-from metamoth.enums import GainSetting, BatteryState
 
 __all__ = [
-    "AudioMothComment",
-    "parse_comment",
+    "get_am_comment",
 ]
-
-COMMENT_REGEX = re.compile(
-    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) \((UTC[^\)]*)\) by "
-    r"AudioMoth ([0-9A-z]{16}) at gain setting (\d) while battery "
-    r"state was ([0-9\.]*)V"
-)
-
-
-DATE_FORMAT = "%H:%M:%S %d/%m/%Y"
-
-
-AudioMothComment = namedtuple(
-    "AudioMothComment",
-    [
-        "datetime",
-        "timezone",
-        "audiomoth_id",
-        "gain",
-        "battery_state",
-        "comment",
-    ],
-)
-
-
-class MessageFormatError(Exception):
-    """Exception raised when the message format is not correct."""
-
-
-def parse_comment(comment: str) -> AudioMothComment:
-    """Parse the comment string into a tuple of metadata.
-
-    Parameters
-    ----------
-    comment : str
-        The comment string.
-
-    Returns
-    -------
-    datetime : datetime.datetime
-        The datetime of the recording.
-
-    timezone:
-        The timezone of the recording.
-
-    audiomoth_id : str
-        The ID of the AudioMoth.
-
-    gain : int
-        The gain setting of the AudioMoth.
-
-    battery_state : float
-        State of the battery in volts at time of recording.
-
-    """
-    match = COMMENT_REGEX.match(comment)
-    if match is None:
-        raise ValueError("Comment string does not match expected format.")
-
-    return AudioMothComment(
-        datetime.datetime.strptime(match.group(1), DATE_FORMAT),
-        match.group(2),
-        match.group(3),
-        int(match.group(4)),
-        float(match.group(5)),
-        comment,
-    )
 
 
 def read_comment(wav: BinaryIO, comment_chunk: Chunk) -> str:
@@ -119,21 +40,26 @@ def get_comment_chunk(chunk: Chunk) -> Chunk:
     Returns
     -------
     comment_chunk : Chunk
+
+    Raises
+    ------
+    ValueError
+        If the comment chunk is not found.
     """
-    for subchunk in chunk.subchunks:
-        if subchunk.chunk_id == "LIST":
+    for sbchunk in chunk.subchunks:
+        if sbchunk.chunk_id == "LIST":
             break
     else:
         raise ValueError("No LIST chunk found.")
 
-    for subsubchunk in subchunk.subchunks:
+    for subsubchunk in sbchunk.subchunks:
         if subsubchunk.chunk_id == "ICMT":
             return subsubchunk
 
     raise ValueError("No comment chunk found.")
 
 
-def get_comments(wav: BinaryIO, chunk: Chunk) -> AudioMothComment:
+def get_am_comment(wav: BinaryIO, chunk: Chunk) -> str:
     """Return the comment from the WAV file.
 
     Parameters
@@ -150,55 +76,4 @@ def get_comments(wav: BinaryIO, chunk: Chunk) -> AudioMothComment:
     comment : str
     """
     comment_chunk = get_comment_chunk(chunk)
-    comment = read_comment(wav, comment_chunk)
-    return parse_comment(comment)
-
-
-COMMENT_REGEX_1_0 = re.compile(
-    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) by "
-    r"AudioMoth ([0-9A-z]{16}) at gain setting (\d) while battery "
-    r"state was [<>]?\s?([0-9\.]*)V"
-)
-
-
-def parse_comment_version_1_0(comment: str):
-    """Parse the comment string of 1.0 firmware.
-
-    Parameters
-    ----------
-    comment : str
-        The comment string.
-
-    Returns
-    -------
-    datetime : datetime.datetime
-        The datetime of the recording.
-
-    timezone:
-        The timezone of the recording.
-
-    audiomoth_id : str
-        The ID of the AudioMoth.
-
-    gain : GainSetting
-        The gain setting of the AudioMoth.
-
-    battery_state : BatteryState
-        State of the battery in volts at time of recording.
-
-    """
-    match = COMMENT_REGEX_1_0.match(comment)
-    if match is None:
-        print(comment)
-        raise MessageFormatError(
-            "Comment string does not match expected format."
-        )
-
-    return AudioMothComment(
-        datetime=dt.strptime(match.group(1), DATE_FORMAT),
-        timezone=tz(td(0)),
-        audiomoth_id=match.group(2),
-        gain=GainSetting(int(match.group(3))),
-        battery_state=float(match.group(4)),
-        comment=comment,
-    )
+    return read_comment(wav, comment_chunk)
