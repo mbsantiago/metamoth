@@ -50,7 +50,7 @@ growing as new features are added to the AudioMoth firmware.
 However, the metadata is not designed to be easily parsed in a programmatic
 way. The data is stored as a string comment making it difficult to retrieve the
 individual metadata fields. Additionally, the comment format is not well
-documented and changes between :ref:`AudioMoth firmware versions`.
+documented and changes between AudioMoth firmware versions.
 
 This package helps by **quickly** parsing the metadata and returning an
 object containing the metadata.
@@ -126,8 +126,6 @@ Nonetheless, they are always present in the metadata object, but may be
   was used and the trigger settings.
 
 The following table shows the fields available for each AudioMoth firmware.
-
-.. _AudioMoth firmware versions:
 
 +---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
 | version | recording_state | temperature_c | amplitude_threshold | frequency_filter | deployment_id | external_microphone | minimum_trigger_duration_s | frequency_trigger |
