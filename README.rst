@@ -35,6 +35,7 @@ metamoth
     :alt: Imports
 
 Metamoth is a Python package for parsing the metadata of AudioMoth_ files.
+Check the full documentation at https://metamoth.readthedocs.io.
 
 .. _AudioMoth: https://www.openacousticdevices.info/audiomoth
 
@@ -49,18 +50,10 @@ growing as new features are added to the AudioMoth firmware.
 However, the metadata is not designed to be easily parsed in a programmatic
 way. The data is stored as a string comment making it difficult to retrieve the
 individual metadata fields. Additionally, the comment format is not well
-documented and changes between `AudioMoth firmware versions`_.
+documented and changes between :ref:`AudioMoth firmware versions`.
 
 This package helps by **quickly** parsing the metadata and returning an
 object containing the metadata.
-
-At the moment, the package only supports AudioMoth files recorded with
-firmware version 1.2.0 or older. Support for newer firmware versions is
-planned, see the CONTRIBUTING_ section if you want to help!
-
-.. _CONTRIBUTING: https://github.com/mbsantiago/metamoth/blob/main/CONTRIBUTING.rst
-
-.. _AudioMoth firmware versions: https://metamoth.readthedocs.io/en/latest/firmwares.html
 
 Usage
 =====
@@ -75,28 +68,164 @@ containing the metadata.
 
     metadata = parse_metadata('path/to/file')
 
-The ``metadata`` variable is an object containing the metadata of the
-file. It has the following attributes:
-
-* ``path``: the title of the file
-* ``duration``: the duration of the file in seconds
-* ``samplerate``: the sample rate of the file in Hz
-* ``channels``: the number of channels in the file
-* ``samples``: the number of samples in the file
-* ``datetime``: the date and time of the file in a datetime object
-* ``timezone``: the timezone of the file. See the timezone information
-  below.
-* ``audiomoth_id``: the ID of the AudioMoth that recorded the file
-* ``battery_state``: the battery state of the AudioMoth that recorded
-  the file in Volts.
-
-You can access any of these attributes as follows:
+The extracted metadata can be accessed as attributes of the object, as shown
 
 .. code-block:: python
 
-    duration = metadata.duration
+    duration = metadata.duration_s
     path = metadata.path
     # etc.
+
+Extracted Metadata
+------------------
+
+The ``metadata`` variable is an object (of type `AMMetadata`_) containing the
+metadata of the file.
+
+The extracted metadata contains:
+
+* ``path``: the path of the audio file
+* ``firmware_version``: the firmware version of the AudioMoth that
+  recorded the file. Since the AudioMoth firmware version is not stored in the
+  recording, this is an estimate and may be incorrect.
+
+Media Information
+
+* ``duration_s``: the duration of the file in seconds.
+* ``samplerate_hz``: the sample rate of the file in Hz.
+* ``channels``: the number of channels in the file.
+* ``samples``: the number of audio samples in the file.
+
+Data extracted from the AudioMoth comment string:
+
+* ``datetime``: the date and time of the file in a datetime_ object.
+* ``timezone``: the timezone of the file as a timezone_ object.
+* ``audiomoth_id``: the ID of the AudioMoth that recorded the file.
+* ``battery_state_v``: the battery state of the AudioMoth that recorded
+  the file in Volts.
+* ``low_battery``: a boolean indicating if the battery state is low.
+* ``gain``: the gain setting of the AudioMoth that recorded the file.
+* ``comment``: the full comment string in the WAV header.
+
+The following fields are only available for some AudioMoth firmware versions.
+Nonetheless, they are always present in the metadata object, but may be
+``None``.
+
+* ``recording_state``: the recording state of the AudioMoth that recorded
+  the file.
+* ``temperature_c``: the temperature of the AudioMoth in Celsius.
+* ``amplitude_threshold``: information concerning the wether an amplitude
+  threshold was used and the threshold value.
+* ``frequency_filter``: information concerning the wether a frequency filter
+  was used and the filter settings.
+* ``deployment_id``: the deployment ID as set by the user.
+* ``external_microphone``: a boolean indicating if an external microphone was
+  used.
+* ``minimum_trigger_duration_s``: the minimum trigger duration in seconds.
+* ``frequency_trigger``: information concerning the wether a frequency trigger
+  was used and the trigger settings.
+
+The following table shows the fields available for each AudioMoth firmware.
+
+.. _AudioMoth firmware versions:
+
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+| version | recording_state | temperature_c | amplitude_threshold | frequency_filter | deployment_id | external_microphone | minimum_trigger_duration_s | frequency_trigger |
++=========+=================+===============+=====================+==================+===============+=====================+============================+===================+
+|   1.0   |        ❌       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.0.1  |        ❌       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.1.0  |        ❌       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.2.0  |        ❌       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.2.1  |        ✅       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.2.2  |        ✅       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.3.0  |        ✅       |       ❌      |          ❌         |        ❌        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.4.0  |        ✅       |       ✅      |          ✅         |        ✅        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.4.1  |        ✅       |       ✅      |          ✅         |        ✅        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.4.2  |        ✅       |       ✅      |          ✅         |        ✅        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.4.3  |        ✅       |       ✅      |          ✅         |        ✅        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.4.4  |        ✅       |       ✅      |          ✅         |        ✅        |       ❌      |          ❌         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.5.0  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ❌             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.6.0  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ✅             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.7.0  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ✅             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.7.1  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ✅             |         ❌        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.8.0  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ✅             |         ✅        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+|  1.8.1  |        ✅       |       ✅      |          ✅         |        ✅        |       ✅      |          ✅         |             ✅             |         ✅        |
++---------+-----------------+---------------+---------------------+------------------+---------------+---------------------+----------------------------+-------------------+
+
+.. _datetime: https://docs.python.org/3/library/datetime.html#datetime.datetime
+.. _timezone: https://docs.python.org/3/library/datetime.html#timezone-objects
+.. _AMMetadata: https://metamoth.readthedocs.io/en/latest/metamoth.html#metamoth.metadata.AMMetadata
+
+Supported AudioMoth Firmware Versions
+=====================================
+
+In the table below you can find the supported AudioMoth firmware versions.
+
+.. list-table:: Supported AudioMoth Firmware Versions
+   :widths: 20 20
+   :header-rows: 1
+
+   * - Firmware
+     - Supported
+   * - 1.0.0
+     - ✅
+   * - 1.0.1
+     - ✅
+   * - 1.1.0
+     - ✅
+   * - 1.2.0
+     - ✅
+   * - 1.2.1
+     - ✅
+   * - 1.2.2
+     - ✅
+   * - 1.3.0
+     - ✅
+   * - 1.4.0
+     - ❌
+   * - 1.4.1
+     - ❌
+   * - 1.4.2
+     - ❌
+   * - 1.4.3
+     - ❌
+   * - 1.4.4
+     - ❌
+   * - 1.5.0
+     - ❌
+   * - 1.6.0
+     - ❌
+   * - 1.7.0
+     - ❌
+   * - 1.7.1
+     - ❌
+   * - 1.8.0
+     - ❌
+   * - 1.8.1
+     - ❌
+
+
+Support for newer firmware versions is planned, see the CONTRIBUTING_ section
+if you want to help!
+
+.. _CONTRIBUTING: https://github.com/mbsantiago/metamoth/blob/main/CONTRIBUTING.rst
 
 Performance
 ===========
@@ -111,9 +240,9 @@ The following table shows the parsing times of ``metamoth`` compared to `exif to
 +-----------------+-----------------+-----------------+-----------------+
 | File Size (MB)  | metamoth (ms)   | exiftool (ms)   | Speedup         |
 +=================+=================+=================+=================+
-| 7.3             | 0.0381          | 80              | ~2000x          |
+| 7.3             | 0.0845          | 80              | ~1000x          |
 +-----------------+-----------------+-----------------+-----------------+
-| 44              | 0.0397          | 91.86           | ~2000x          |
+| 44              | 0.0850          | 91.86           | ~1000x          |
 +-----------------+-----------------+-----------------+-----------------+
 
 
@@ -125,11 +254,6 @@ Installation
 The ``metamoth`` package can be installed using ``pip``::
 
     pip install metamoth
-
-If you prefer to use conda, you can install the package from the
-conda-forge channel::
-
-    conda install -c conda-forge metamoth
 
 Check the installation section of the documentation_ for more
 information.

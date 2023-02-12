@@ -9,6 +9,14 @@ metamoth package
 Submodules
 ----------
 
+metamoth.artist module
+----------------------
+
+.. automodule:: metamoth.artist
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 metamoth.audio module
 ---------------------
 
@@ -33,6 +41,22 @@ metamoth.comments module
    :undoc-members:
    :show-inheritance:
 
+metamoth.config module
+----------------------
+
+.. automodule:: metamoth.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+metamoth.enums module
+---------------------
+
+.. automodule:: metamoth.enums
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 metamoth.mediainfo module
 -------------------------
 
@@ -41,10 +65,26 @@ metamoth.mediainfo module
    :undoc-members:
    :show-inheritance:
 
+metamoth.metadata module
+------------------------
+
+.. automodule:: metamoth.metadata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 metamoth.metamoth module
 ------------------------
 
 .. automodule:: metamoth.metamoth
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+metamoth.parsing module
+-----------------------
+
+.. automodule:: metamoth.parsing
    :members:
    :undoc-members:
    :show-inheritance:
