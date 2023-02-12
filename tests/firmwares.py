@@ -61,7 +61,7 @@ def generate_comment_v1_0(
     gain_str = _get_gain_setting_1_0(config.gain)
 
     return (
-        f"Recorded at {time_str} by AudioMoth {serial_number:016x}"
+        f"Recorded at {time_str} by AudioMoth {serial_number:016x} "
         f"at {gain_str} while {battery_str}"
     )
 
@@ -141,12 +141,12 @@ def _get_recording_state_1_2_1(recording_state: RecordingState):
     if recording_state == RecordingState.RECORDING_OKAY:
         return ""
 
-    if recording_state == RecordingState.SUPPLY_VOLTAGE_LOW:
-        return (
-            " Recording cancelled before completion due to low battery voltage"
-        )
+    cause = "change of switch position"
 
-    return " Recording cancelled before completion due to change of switch position"
+    if recording_state == RecordingState.SUPPLY_VOLTAGE_LOW:
+        cause = "low battery voltage"
+
+    return f" Recording cancelled before completion due to {cause}."
 
 
 def generate_comment_v1_2_1(
@@ -195,7 +195,10 @@ def generate_comment_v1_2_2(
     config: Config1_2_2,
     recording_state: RecordingState,
 ):
-    """Generate a comment in the format of the firmware version 1.2.2."""
+    """Generate a comment in the format of the firmware version 1.2.2.
+
+    Also used for firmware version 1.3.0.
+    """
 
     time_str = _get_datetime_1_0(time)
     battery_str = _get_battery_state_1_2_1(battery_state)
