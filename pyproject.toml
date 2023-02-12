@@ -22,7 +22,7 @@ debug = ["debugpy>=1.6.6"]
 
 [project]
 name = "metamoth"
-version = "1.0.0"
+version = "1.0.1"
 description = "Simple Python utility to parse AudioMoth metadata"
 authors = [
     { name = "Santiago Martinez Balvanera", email = "santiago.balvanera.20@ucl.ac.uk" },
