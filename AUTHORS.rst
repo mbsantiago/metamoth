@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Santiago Martinez Balvanera <santiago.balvanera.20@ucl.ac.com>
+* Santiago Martinez Balvanera <santiago.balvanera.20@ucl.ac.uk>
 
 Contributors
 ------------
