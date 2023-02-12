@@ -158,3 +158,6 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+
+latex_engine = "xelatex"
