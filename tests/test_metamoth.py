@@ -23,7 +23,7 @@ def test_parse_metadata():
     assert metadata.datetime == dt(2018, 4, 6, 19, 17, 30)
     assert metadata.audiomoth_id == "0FE081F80FE081F0"
     assert metadata.gain == GainSetting.AM_GAIN_MEDIUM
-    assert metadata.battery_state_volts == 4.5
+    assert metadata.battery_state_v == 4.5
     assert metadata.comment == (
         "Recorded at 19:17:30 06/04/2018 (UTC) by AudioMoth "
         "0FE081F80FE081F0 at gain setting 2 while battery "
@@ -32,5 +32,5 @@ def test_parse_metadata():
     assert metadata.samplerate_hz == 192000
     assert metadata.channels == 1
     assert metadata.samples == 3840000
-    assert metadata.duration_seconds == 20.0
+    assert metadata.duration_s == 20.0
     assert metadata.recording_state == RecordingState.RECORDING_OKAY

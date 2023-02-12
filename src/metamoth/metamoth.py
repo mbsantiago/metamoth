@@ -6,7 +6,7 @@ from metamoth.artist import get_am_artist
 from metamoth.chunks import parse_into_chunks
 from metamoth.comments import get_am_comment
 from metamoth.mediainfo import get_media_info
-from metamoth.metadata import CommentMetadataV6, assemble_metadata
+from metamoth.metadata import AMMetadata, assemble_metadata
 from metamoth.parsing import parse_comment
 
 __all__ = [
@@ -17,7 +17,7 @@ __all__ = [
 PathLike = Union[os.PathLike, str]
 
 
-def parse_metadata(path: PathLike) -> CommentMetadataV6:
+def parse_metadata(path: PathLike) -> AMMetadata:
     """Parse the metadata from an AudioMoth recording.
 
     Parameters
@@ -27,6 +27,8 @@ def parse_metadata(path: PathLike) -> CommentMetadataV6:
     Returns
     -------
     Metadata
+        Parse metadata from the recording at `path`. The metadata is
+        returned as a :py:class:`AMMetadata` object.
     """
     with open(path, "rb") as wav:
         riff = parse_into_chunks(wav)

@@ -22,7 +22,7 @@ class MediaInfo:
     samplerate_hz: int
     """Sample rate in Hz."""
 
-    duration_seconds: float
+    duration_s: float
     """Duration in seconds."""
 
     samples: int
@@ -83,5 +83,5 @@ def get_media_info(wav: BinaryIO, chunk: Chunk) -> MediaInfo:
         samplerate_hz=samplerate,
         channels=channels,
         samples=samples,
-        duration_seconds=duration,
+        duration_s=duration,
     )

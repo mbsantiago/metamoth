@@ -21,6 +21,10 @@ __all__ = [
     "CommentMetadataV5",
     "CommentMetadataV6",
     "AMMetadata",
+    "FrequencyFilter",
+    "AmplitudeThreshold",
+    "FrequencyTrigger",
+    "ExtraMetadata",
     "assemble_metadata",
 ]
 
@@ -86,7 +90,7 @@ class CommentMetadata:
     low_battery: bool
     """True if the battery is low."""
 
-    battery_state_volts: float
+    battery_state_v: float
     """Battery state in volts."""
 
 
@@ -122,7 +126,7 @@ class CommentMetadataV3(CommentMetadata):
     recording_state: RecordingState
     """Recording state of the AudioMoth."""
 
-    temperature_celsius: float
+    temperature_c: float
     """Temperature in degrees Celsius."""
 
     amplitude_threshold: AmplitudeThreshold
@@ -142,7 +146,7 @@ class CommentMetadataV4(CommentMetadata):
     recording_state: RecordingState
     """Recording state of the AudioMoth."""
 
-    temperature_celsius: float
+    temperature_c: float
     """Temperature in degrees Celsius."""
 
     amplitude_threshold: AmplitudeThreshold
@@ -168,7 +172,7 @@ class CommentMetadataV5(CommentMetadata):
     recording_state: RecordingState
     """Recording state of the AudioMoth."""
 
-    temperature_celsius: float
+    temperature_c: float
     """Temperature in degrees Celsius."""
 
     amplitude_threshold: AmplitudeThreshold
@@ -183,7 +187,7 @@ class CommentMetadataV5(CommentMetadata):
     external_microphone: bool
     """True if an external microphone is connected to the AudioMoth."""
 
-    minimum_trigger_duration_seconds: int
+    minimum_trigger_duration_s: int
     """Minimum trigger duration in seconds."""
 
 
@@ -197,7 +201,7 @@ class CommentMetadataV6(CommentMetadata):
     recording_state: Optional[RecordingState] = RecordingState.RECORDING_OKAY
     """Recording state of the AudioMoth."""
 
-    temperature_celsius: Optional[float] = None
+    temperature_c: Optional[float] = None
     """Temperature in degrees Celsius."""
 
     amplitude_threshold: Optional[AmplitudeThreshold] = None
@@ -212,7 +216,7 @@ class CommentMetadataV6(CommentMetadata):
     external_microphone: bool = False
     """True if an external microphone is connected to the AudioMoth."""
 
-    minimum_trigger_duration_seconds: Optional[int] = None
+    minimum_trigger_duration_s: Optional[int] = None
     """Minimum trigger duration in seconds."""
 
     frequency_trigger: Optional[FrequencyTrigger] = None
@@ -269,7 +273,7 @@ def assemble_metadata(
     return AMMetadata(
         path=path,
         samplerate_hz=media_info.samplerate_hz,
-        duration_seconds=media_info.duration_seconds,
+        duration_s=media_info.duration_s,
         samples=media_info.samples,
         channels=media_info.channels,
         **comment_metadata,

@@ -53,7 +53,7 @@ def test_can_parse_comment_from_version_1_0(
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
-    assert parsed_comment.battery_state_volts == battery_state.volts
+    assert parsed_comment.battery_state_v == battery_state.volts
 
     if battery_state == BatteryState.AM_BATTERY_LOW:
         assert parsed_comment.low_battery
@@ -92,7 +92,7 @@ def test_can_parse_comment_from_version_1_0_1(
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
-    assert parsed_comment.battery_state_volts == battery_state.volts
+    assert parsed_comment.battery_state_v == battery_state.volts
 
     if battery_state == BatteryState.AM_BATTERY_LOW:
         assert parsed_comment.low_battery
@@ -128,7 +128,7 @@ def test_can_parse_comment_from_version_1_2_0(
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
-    assert parsed_comment.battery_state_volts == battery_state.volts
+    assert parsed_comment.battery_state_v == battery_state.volts
 
     if battery_state == BatteryState.AM_BATTERY_LOW:
         assert parsed_comment.low_battery
@@ -173,7 +173,7 @@ def test_can_parse_comment_from_version_1_2_1(
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
-    assert parsed_comment.battery_state_volts == battery_state.volts
+    assert parsed_comment.battery_state_v == battery_state.volts
 
     if battery_state == BatteryState.AM_BATTERY_LOW:
         assert parsed_comment.low_battery
@@ -223,7 +223,7 @@ def test_can_parse_comment_from_version_1_2_2(
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
-    assert parsed_comment.battery_state_volts == battery_state.volts
+    assert parsed_comment.battery_state_v == battery_state.volts
 
     if battery_state == BatteryState.AM_BATTERY_LOW:
         assert parsed_comment.low_battery

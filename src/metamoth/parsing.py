@@ -67,7 +67,7 @@ def parse_comment_version_1_0(
         gain=GainSetting(int(match.group(3))),
         comment=comment,
         low_battery=low_battery,
-        battery_state_volts=battery_state_volts,
+        battery_state_v=battery_state_volts,
     )
 
 
@@ -117,7 +117,7 @@ def parse_comment_version_1_0_1(comment: str) -> CommentMetadataV1:
         gain=GainSetting(int(match.group(3))),
         comment=comment,
         low_battery=low_battery,
-        battery_state_volts=battery_state_volts,
+        battery_state_v=battery_state_volts,
     )
 
 
@@ -165,7 +165,7 @@ def parse_comment_version_1_2_0(comment: str) -> CommentMetadataV1:
         gain=GainSetting(int(match.group(3))),
         comment=comment,
         low_battery=low_battery,
-        battery_state_volts=battery_state_volts,
+        battery_state_v=battery_state_volts,
     )
 
 
@@ -233,7 +233,7 @@ def parse_comment_version_1_2_1(comment: str) -> CommentMetadataV2:
         gain=gain,
         comment=comment,
         low_battery=low_battery,
-        battery_state_volts=battery_state_volts,
+        battery_state_v=battery_state_volts,
         recording_state=recording_state,
     )
 
@@ -307,7 +307,7 @@ def parse_comment_version_1_2_2(comment: str) -> CommentMetadataV2:
         gain=gain,
         comment=comment,
         low_battery=low_battery,
-        battery_state_volts=battery_state_volts,
+        battery_state_v=battery_state_volts,
         recording_state=recording_state,
     )
 
