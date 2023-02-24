@@ -55,7 +55,6 @@ def generate_comment_v1_0(
     config: Config1_0,
 ):
     """Generate a comment in the format of the firmware version 1.0."""
-
     time_str = _get_datetime_1_0(time)
     battery_str = _get_battery_state_1_0(battery_state)
     gain_str = _get_gain_setting_1_0(config.gain)
@@ -199,7 +198,6 @@ def generate_comment_v1_2_2(
 
     Also used for firmware version 1.3.0.
     """
-
     time_str = _get_datetime_1_0(time)
     battery_str = _get_battery_state_1_2_1(battery_state)
     gain_str = _get_gain_setting_1_0(config.gain)
@@ -313,7 +311,6 @@ def generate_comment_v1_4_0(
 
     Also valid for version 1.4.1.
     """
-
     time_str = _get_datetime_1_0(time)
     battery_str = _get_battery_state_1_4_0(extended_battery_state)
     gain_str = _get_gain_setting_1_4_0(config.gain)
@@ -366,7 +363,6 @@ def generate_comment_v1_4_2(
 
     Also valid for versions 1.4.3 and 1.4.4.
     """
-
     time_str = _get_datetime_1_0(time)
     battery_str = _get_battery_state_1_4_0(extended_battery_state)
     gain_str = _get_gain_setting_1_4_0(config.gain)
