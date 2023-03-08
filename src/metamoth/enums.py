@@ -82,6 +82,15 @@ class ExtendedBatteryState(Enum):
     AM_EXT_BAT_4V9 = 25
     AM_EXT_BAT_FULL = 26
 
+    @property
+    def volts(self) -> float:
+        """Return the battery voltage."""
+        if self.value == 0:
+            return 2.5
+        if self.value == 26:
+            return 5.0
+        return (self.value + 24) / 10
+
 
 class RecordingState(Enum):
     """Recording state."""
