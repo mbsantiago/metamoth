@@ -244,7 +244,7 @@ def parse_comment_version_1_2_1(comment: str) -> CommentMetadataV2:
 COMMENT_REGEX_1_2_2 = re.compile(
     r"Recorded at "
     r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
-    r"\(UTC([\+\-]?\d{0,2}):?\d{0,2}\) by "  # timezone
+    r"\(UTC([\+\-]?\d{0,2}:?\d{0,2})\) by "  # timezone
     r"AudioMoth ([0-9A-z]{16}) "  # audiomoth id
     r"at gain setting (\d) while battery state was "  # gain setting
     r"(less than 3\.6|greater than 4\.9|\d\.\d)V"  # battery state
@@ -318,16 +318,17 @@ def parse_comment_version_1_2_2(comment: str) -> CommentMetadataV2:
 COMMENT_REGEX_1_4_0 = re.compile(
     r"Recorded at "
     r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
-    r"\(UTC([\+\-]?\d{0,2}):?\d{0,2}\) by "  # timezone
+    r"\(UTC([\+\-]?\d{0,2}:?\d{0,2})\) by "  # timezone
     r"AudioMoth ([0-9A-z]{16}) "  # audiomoth id
     r"at (low|low-medium|medium|medium-high|high) gain setting "  # gain
     "while battery state was "
     r"(less than 2\.5|greater than 4\.9|\d\.\d)V "  # battery state
     r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
-    r"( Amplitude threshold was \d{1-4}\.)?"  # threshold
-    r"( Band-pass filter applied with cut-off frequencies of \d\.\dkHz and "
-    r"\d\.\dkHz| Low-pass filter applied with cut-off frequency of \d\.\dkHz "
-    r"| High-pass filter applied with cut-off frequency of \d\.\dkHz)?"
+    r"( Amplitude threshold was \d{1,4}\.)?"  # threshold
+    r"( Band-pass filter applied with cut-off frequencies of \d{1,4}"
+    r"\.\dkHz and \d{1,4}\.\dkHz\.| Low-pass filter applied with cut-off "
+    r"frequency of \d{1,4}\.\dkHz\.|"
+    r" High-pass filter applied with cut-off frequency of \d{1,4}\.\dkHz\.)?"
     r"( Recording cancelled before completion due to "
     r"(low voltage|change of switch position)\.)?"
 )
@@ -342,12 +343,13 @@ _gain_mapping = {
 }
 
 
-AMPLITUDE_REGEX = re.compile(r"Amplitude threshold was (\d{1,4})\.")
+AMPLITUDE_REGEX = re.compile(r" Amplitude threshold was (\d{1,4})\.")
 
 
 def _parse_amplitude_threshold_1_4_0(
     comment: Optional[str],
 ) -> AmplitudeThreshold:
+    """Parse the amplitude threshold from the comment string."""
     if comment is None:
         return AmplitudeThreshold(enabled=False, threshold=0)
 
@@ -359,6 +361,7 @@ def _parse_amplitude_threshold_1_4_0(
 
 
 def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
+    """Parse the frequency filter from the comment string."""
     if comment is None:
         return FrequencyFilter(
             type=FilterType.NO_FILTER,
@@ -368,8 +371,8 @@ def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
 
     if "Band-pass filter applied" in comment:
         match = re.match(
-            r"Band-pass filter applied with cut-off frequencies of "
-            r"(\d{1-4}\.\d)kHz and (\d{1-4}\.\d)kHz",
+            r" Band-pass filter applied with cut-off frequencies of "
+            r"(\d{1,4}\.\d)kHz and (\d{1,4}\.\d)kHz\.",
             comment,
         )
 
@@ -385,8 +388,8 @@ def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
     if "Low-pass filter applied" in comment:
         match = re.match(
             (
-                r"Low-pass filter applied with cut-off frequency of "
-                r"(\d{1-4}\.\d)kHz"
+                r" Low-pass filter applied with cut-off frequency of "
+                r"(\d{1,4}\.\d)kHz\."
             ),
             comment,
         )
@@ -403,8 +406,8 @@ def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
     if "High-pass filter applied" in comment:
         match = re.match(
             (
-                r"High-pass filter applied with cut-off frequency "
-                r"of (\d{1-4}\.\d)kHz"
+                r" High-pass filter applied with cut-off frequency "
+                r"of (\d{1,4}\.\d)kHz\."
             ),
             comment,
         )
@@ -422,17 +425,22 @@ def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
 
 
 def _parse_timezone(comment: str) -> tz:
+    """Parse the timezone from the comment string."""
     if comment == "":
-        timezone = tz(td(0))
-    elif ":" not in comment:
-        timezone = tz(td(hours=int(comment)))
-    else:
-        hours, minutes = comment.split(":")
-        timezone = tz(td(hours=int(hours), minutes=int(minutes)))
-    return timezone
+        return tz(td(0))
+
+    if ":" not in comment:
+        return tz(td(hours=int(comment)))
+
+    hours, minutes = comment.split(":")
+    return tz(td(hours=int(hours), minutes=int(minutes)))
 
 
 def _parse_recording_state_1_4_0(comment: Optional[str]) -> RecordingState:
+    """Parse the recording state from the comment string.
+
+    Works for version 1.4.0 and 1.4.1.
+    """
     if comment is None:
         return RecordingState.RECORDING_OKAY
 
@@ -446,6 +454,7 @@ def _parse_recording_state_1_4_0(comment: Optional[str]) -> RecordingState:
 
 
 def _parse_battery_state_1_4_0(comment: str) -> Tuple[bool, float]:
+    """Parse the battery state from the comment string."""
     low_battery = False
     if comment == "less than 2.5":
         low_battery = True
@@ -506,6 +515,7 @@ def parse_comment_version_1_4_0(comment: str) -> CommentMetadataV3:
 
 
 def _parse_recording_state_1_4_2(comment: Optional[str]) -> RecordingState:
+    """Parse the recording state from the comment string of 1.4.2 firmware."""
     if comment is None:
         return RecordingState.RECORDING_OKAY
 
@@ -524,16 +534,17 @@ def _parse_recording_state_1_4_2(comment: Optional[str]) -> RecordingState:
 COMMENT_REGEX_1_4_2 = re.compile(
     r"Recorded at "
     r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
-    r"\(UTC([\+\-]?\d{0,2}):?\d{0,2}\) by "  # timezone
+    r"\(UTC([\+\-]?\d{0,2}:?\d{0,2})\) by "  # timezone
     r"AudioMoth ([0-9A-z]{16}) "  # audiomoth id
     r"at (low|low-medium|medium|medium-high|high) gain setting "  # gain
     "while battery state was "
     r"(less than 2\.5|greater than 4\.9|\d\.\d)V "  # battery state
     r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
-    r"( Amplitude threshold was \d{1-4}\.)?"  # threshold
-    r"( Band-pass filter applied with cut-off frequencies of \d\.\dkHz and "
-    r"\d\.\dkHz| Low-pass filter applied with cut-off frequency of \d\.\dkHz "
-    r"| High-pass filter applied with cut-off frequency of \d\.\dkHz)?"
+    r"( Amplitude threshold was \d{1,4}\.)?"  # threshold
+    r"( Band-pass filter applied with cut-off frequencies of \d{1,4}\.\dkHz "
+    r"and \d{1,4}\.\dkHz\.| Low-pass filter applied with cut-off frequency of "
+    r"\d{1,4}\.\dkHz\."
+    r"| High-pass filter applied with cut-off frequency of \d{1,4}\.\dkHz\.)?"
     r"( Recording cancelled before completion due to "
     r"(low voltage|change of switch position|file size limit)\.)?"
 )

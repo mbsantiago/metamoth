@@ -170,13 +170,15 @@ def _get_timezone_1_2_2(hours: int, minutes: int) -> str:
         hours_str = f"+{hours:d}"
     elif hours < 0:
         hours_str = f"{hours:d}"
+    elif minutes != 0:
+        hours_str = "+0"
     else:
         hours_str = ""
 
     if minutes > 0:
-        minutes_str = f":{minutes:2d}"
+        minutes_str = f":{minutes:02d}"
     elif minutes < 0:
-        minutes_str = f":{-minutes:2d}"
+        minutes_str = f":{-minutes:02d}"
     else:
         minutes_str = ""
 
@@ -212,11 +214,15 @@ def generate_comment_v1_2_2(
 def _get_frequency_filter_1_4_0(
     lower_filter_freq: int, higher_filter_freq: int
 ) -> str:
+    """Get the frequency filter string.
+
+    We assume that the filter frequencies are in units of Hz.
+    """
     if lower_filter_freq == 0 and higher_filter_freq == 0:
         return ""
 
-    low_freq = lower_filter_freq / 10
-    high_freq = higher_filter_freq / 10
+    low_freq = lower_filter_freq / 1000
+    high_freq = higher_filter_freq / 1000
 
     if lower_filter_freq > 0 and higher_filter_freq > 0:
         return (
@@ -224,7 +230,7 @@ def _get_frequency_filter_1_4_0(
             f"{low_freq:01.01f}kHz and {high_freq:01.01f}kHz."
         )
 
-    if lower_filter_freq > 0:
+    if higher_filter_freq > 0:
         return (
             " Low-pass filter applied with cut-off frequency of "
             f"{high_freq:01.01f}kHz."
@@ -265,10 +271,12 @@ def _get_timezone_1_4_0(hours: int, minutes: int) -> str:
 
     minutes_str = ""
     if minutes < 0:
-        hours_str = f"-{hours:d}"
+        if hours == 0:
+            hours_str = "-0"
         minutes_str = f":{-minutes:d}"
     elif minutes > 0:
-        hours_str = f"+{hours:02d}"
+        if hours == 0:
+            hours_str = "+0"
         minutes_str = f":{minutes:02d}"
 
     return f"(UTC{hours_str}{minutes_str})"

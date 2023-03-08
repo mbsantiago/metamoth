@@ -119,7 +119,10 @@ def test_can_parse_comment_from_version_1_0_1(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
     battery_state=st.sampled_from(BatteryState),
-    config=st.builds(Config1_2_0, gain=st.integers(0, 4)),
+    config=st.builds(
+        Config1_2_0,
+        gain=st.integers(0, 4),
+    ),
 )
 def test_can_parse_comment_from_version_1_2_0(
     time: datetime.datetime,
@@ -139,7 +142,7 @@ def test_can_parse_comment_from_version_1_2_0(
     parsed_comment = parse_comment_version_1_2_0(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone == tz(td(0))
+    assert parsed_comment.timezone == tz(td(hours=config.timezone))
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
@@ -155,7 +158,11 @@ def test_can_parse_comment_from_version_1_2_0(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
     battery_state=st.sampled_from(BatteryState),
-    config=st.builds(Config1_2_1, gain=st.integers(0, 4)),
+    config=st.builds(
+        Config1_2_1,
+        gain=st.integers(0, 4),
+        timezone=st.integers(-12, 12),
+    ),
     recording_state=st.sampled_from(
         [
             RecordingState.RECORDING_OKAY,
@@ -184,7 +191,7 @@ def test_can_parse_comment_from_version_1_2_1(
     parsed_comment = parse_comment_version_1_2_1(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone == tz(td(0))
+    assert parsed_comment.timezone == tz(td(hours=config.timezone))
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
@@ -202,7 +209,12 @@ def test_can_parse_comment_from_version_1_2_1(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
     battery_state=st.sampled_from(BatteryState),
-    config=st.builds(Config1_2_2, gain=st.integers(0, 4)),
+    config=st.builds(
+        Config1_2_2,
+        gain=st.integers(0, 4),
+        timezone_hours=st.integers(-12, 12),
+        timezone_minutes=st.integers(0, 59),
+    ),
     recording_state=st.sampled_from(
         [
             RecordingState.RECORDING_OKAY,
@@ -234,7 +246,9 @@ def test_can_parse_comment_from_version_1_2_2(
     parsed_comment = parse_comment_version_1_2_2(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone == tz(td(0))
+    assert parsed_comment.timezone == tz(
+        td(hours=config.timezone_hours, minutes=config.timezone_minutes)
+    )
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
@@ -252,7 +266,15 @@ def test_can_parse_comment_from_version_1_2_2(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
     battery_state=st.sampled_from(ExtendedBatteryState),
-    config=st.builds(Config1_4_0, gain=st.integers(0, 4)),
+    config=st.builds(
+        Config1_4_0,
+        gain=st.integers(0, 4),
+        timezone_hours=st.integers(-12, 12),
+        timezone_minutes=st.integers(0, 59),
+        amplitude_threshold=st.integers(0, 100),
+        higher_filter_freq=st.integers(0, 20000),
+        lower_filter_freq=st.integers(0, 20000),
+    ),
     recording_state=st.sampled_from(
         [
             RecordingState.RECORDING_OKAY,
@@ -287,7 +309,9 @@ def test_can_parse_comment_from_version_1_4_0(
     parsed_comment = parse_comment_version_1_4_0(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone == tz(td(0))
+    assert parsed_comment.timezone == tz(
+        td(hours=config.timezone_hours, minutes=config.timezone_minutes)
+    )
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
@@ -314,17 +338,15 @@ def test_can_parse_comment_from_version_1_4_0(
     assert parsed_comment.frequency_filter.type == filter_type
 
     if filter_type in [FilterType.BAND_PASS, FilterType.LOW_PASS]:
-        assert (
-            parsed_comment.frequency_filter.higher_frequency_hz
-            == config.higher_filter_freq
+        assert parsed_comment.frequency_filter.higher_frequency_hz == int(
+            1000 * float(f"{config.higher_filter_freq / 1000:.1f}")
         )
     else:
         assert parsed_comment.frequency_filter.higher_frequency_hz is None
 
     if filter_type in [FilterType.BAND_PASS, FilterType.HIGH_PASS]:
-        assert (
-            parsed_comment.frequency_filter.lower_frequency_hz
-            == config.lower_filter_freq
+        assert parsed_comment.frequency_filter.lower_frequency_hz == int(
+            1000 * float(f"{config.lower_filter_freq / 1000:.1f}")
         )
     else:
         assert parsed_comment.frequency_filter.lower_frequency_hz is None
@@ -334,7 +356,15 @@ def test_can_parse_comment_from_version_1_4_0(
     time=st.datetimes(),
     serial_number=st.integers(min_value=0, max_value=2**64 - 1),
     battery_state=st.sampled_from(ExtendedBatteryState),
-    config=st.builds(Config1_4_0, gain=st.integers(0, 4)),
+    config=st.builds(
+        Config1_4_0,
+        gain=st.integers(0, 4),
+        timezone_hours=st.integers(-12, 12),
+        timezone_minutes=st.integers(0, 59),
+        amplitude_threshold=st.integers(0, 100),
+        higher_filter_freq=st.integers(0, 20000),
+        lower_filter_freq=st.integers(0, 20000),
+    ),
     recording_state=st.sampled_from(
         [
             RecordingState.RECORDING_OKAY,
@@ -370,7 +400,10 @@ def test_can_parse_comment_from_version_1_4_2(
     parsed_comment = parse_comment_version_1_4_2(comment)
 
     assert parsed_comment.datetime == time
-    assert parsed_comment.timezone == tz(td(0))
+
+    assert parsed_comment.timezone == tz(
+        td(hours=config.timezone_hours, minutes=config.timezone_minutes)
+    )
     assert parsed_comment.audiomoth_id == f"{serial_number:016x}"
     assert parsed_comment.gain.value == config.gain
     assert parsed_comment.comment == comment
@@ -398,17 +431,15 @@ def test_can_parse_comment_from_version_1_4_2(
     assert parsed_comment.frequency_filter.type == filter_type
 
     if filter_type in [FilterType.BAND_PASS, FilterType.LOW_PASS]:
-        assert (
-            parsed_comment.frequency_filter.higher_frequency_hz
-            == config.higher_filter_freq
+        assert parsed_comment.frequency_filter.higher_frequency_hz == int(
+            1000 * float(f"{config.higher_filter_freq / 1000:.1f}")
         )
     else:
         assert parsed_comment.frequency_filter.higher_frequency_hz is None
 
     if filter_type in [FilterType.BAND_PASS, FilterType.HIGH_PASS]:
-        assert (
-            parsed_comment.frequency_filter.lower_frequency_hz
-            == config.lower_filter_freq
+        assert parsed_comment.frequency_filter.lower_frequency_hz == int(
+            1000 * float(f"{config.lower_filter_freq / 1000:.1f}")
         )
     else:
         assert parsed_comment.frequency_filter.lower_frequency_hz is None
