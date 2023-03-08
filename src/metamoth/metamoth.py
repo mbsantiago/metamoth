@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-PathLike = Union[os.PathLike, str]
+PathLike = Union[os.PathLike, str]  # pylint: disable=no-member
 
 
 def parse_metadata(path: PathLike) -> AMMetadata:
