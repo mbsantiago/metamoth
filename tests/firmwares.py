@@ -22,10 +22,6 @@ from metamoth.enums import (
 )
 
 
-def _rounded_div(a, b):  # pylint: disable=invalid-name
-    return ((a) + (b / 2)) / (b)
-
-
 def _get_datetime_1_0(time: datetime.datetime) -> str:
     return (
         f"{time.hour:02d}:{time.minute:02d}:{time.second:02d} "
@@ -240,10 +236,8 @@ def _get_frequency_filter_1_4_0(
     )
 
 
-def _get_temperature_1_4_0(temperature: int) -> str:
-    sign = "-" if temperature < 0 else ""
-    temp_in_decidegrees = _rounded_div(abs(temperature), 100)
-    return f"{sign}{temp_in_decidegrees / 10:1.1f}"
+def _get_temperature_1_4_0(temperature: float) -> str:
+    return f"temperature was {temperature:2.1f}C"
 
 
 def _get_battery_state_1_4_0(battery_state: ExtendedBatteryState) -> str:
@@ -253,7 +247,7 @@ def _get_battery_state_1_4_0(battery_state: ExtendedBatteryState) -> str:
     if battery_state == ExtendedBatteryState.AM_EXT_BAT_FULL:
         return "battery state was greater than 4.9V"
 
-    voltage = (battery_state.value + 35) / 10
+    voltage = battery_state.volts
     return f"battery state was {voltage:01.01f}V"
 
 
@@ -291,12 +285,15 @@ def _get_recording_state_1_4_0(recording_state: RecordingState) -> str:
     if recording_state == RecordingState.RECORDING_OKAY:
         return ""
 
-    cause = "change of switch position"
+    template = " Recording cancelled before completion due to {cause}."
 
     if recording_state == RecordingState.SUPPLY_VOLTAGE_LOW:
-        cause = "low voltage"
+        return template.format(cause="low voltage")
 
-    return f" Recording cancelled before completion due to {cause}."
+    if recording_state == RecordingState.SWITCH_CHANGED:
+        return template.format(cause="change of switch position")
+
+    return ""
 
 
 def generate_comment_v1_4_0(
@@ -305,7 +302,7 @@ def generate_comment_v1_4_0(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_4_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
 ):
     """Generate a comment in the format of the firmware version 1.4.0.
 
@@ -357,7 +354,7 @@ def generate_comment_v1_4_2(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_4_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
 ):
     """Generate a comment in the format of the firmware version 1.4.2.
 
@@ -426,7 +423,7 @@ def generate_comment_v1_5_0(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_5_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
     deployment_id: Optional[int],
     external_microphone: bool,
 ):
@@ -551,7 +548,7 @@ def generate_comment_v1_6_0(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_6_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
     deployment_id: Optional[int],
     external_microphone: bool,
 ):
@@ -623,7 +620,7 @@ def generate_comment_v1_7_0(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_7_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
     deployment_id: Optional[int],
     external_microphone: bool,
 ):
@@ -693,7 +690,7 @@ def generate_comment_v1_8_0(
     extended_battery_state: ExtendedBatteryState,
     config: Config1_8_0,
     recording_state: RecordingState,
-    temperature: int,
+    temperature: float,
     deployment_id: Optional[int],
     external_microphone: bool,
 ):

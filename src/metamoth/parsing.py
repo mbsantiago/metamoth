@@ -4,13 +4,16 @@ from dataclasses import asdict
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional, Tuple
 
-from metamoth.enums import GainSetting, RecordingState
+from metamoth.enums import FilterType, GainSetting, RecordingState
 from metamoth.metadata import (
+    AmplitudeThreshold,
     CommentMetadata,
     CommentMetadataV1,
     CommentMetadataV2,
+    CommentMetadataV3,
+    FrequencyFilter,
 )
 
 DATE_FORMAT = "%H:%M:%S %d/%m/%Y"
@@ -312,12 +315,286 @@ def parse_comment_version_1_2_2(comment: str) -> CommentMetadataV2:
     )
 
 
+COMMENT_REGEX_1_4_0 = re.compile(
+    r"Recorded at "
+    r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
+    r"\(UTC([\+\-]?\d{0,2}):?\d{0,2}\) by "  # timezone
+    r"AudioMoth ([0-9A-z]{16}) "  # audiomoth id
+    r"at (low|low-medium|medium|medium-high|high) gain setting "  # gain
+    "while battery state was "
+    r"(less than 2\.5|greater than 4\.9|\d\.\d)V "  # battery state
+    r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
+    r"( Amplitude threshold was \d{1-4}\.)?"  # threshold
+    r"( Band-pass filter applied with cut-off frequencies of \d\.\dkHz and "
+    r"\d\.\dkHz| Low-pass filter applied with cut-off frequency of \d\.\dkHz "
+    r"| High-pass filter applied with cut-off frequency of \d\.\dkHz)?"
+    r"( Recording cancelled before completion due to "
+    r"(low voltage|change of switch position)\.)?"
+)
+
+
+_gain_mapping = {
+    "low": GainSetting.AM_GAIN_LOW,
+    "low-medium": GainSetting.AM_GAIN_LOW_MEDIUM,
+    "medium": GainSetting.AM_GAIN_MEDIUM,
+    "medium-high": GainSetting.AM_GAIN_MEDIUM_HIGH,
+    "high": GainSetting.AM_GAIN_HIGH,
+}
+
+
+AMPLITUDE_REGEX = re.compile(r"Amplitude threshold was (\d{1,4})\.")
+
+
+def _parse_amplitude_threshold_1_4_0(
+    comment: Optional[str],
+) -> AmplitudeThreshold:
+    if comment is None:
+        return AmplitudeThreshold(enabled=False, threshold=0)
+
+    match = AMPLITUDE_REGEX.fullmatch(comment)
+
+    if match is None:
+        raise MessageFormatError(f"Unexpected amplitude threshold: {comment}")
+    return AmplitudeThreshold(enabled=True, threshold=int(match.group(1)))
+
+
+def _parse_frequency_filter_1_4_0(comment: Optional[str]) -> FrequencyFilter:
+    if comment is None:
+        return FrequencyFilter(
+            type=FilterType.NO_FILTER,
+            lower_frequency_hz=None,
+            higher_frequency_hz=None,
+        )
+
+    if "Band-pass filter applied" in comment:
+        match = re.match(
+            r"Band-pass filter applied with cut-off frequencies of "
+            r"(\d{1-4}\.\d)kHz and (\d{1-4}\.\d)kHz",
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.BAND_PASS,
+            lower_frequency_hz=int(float(match.group(1)) * 1000),
+            higher_frequency_hz=int(float(match.group(2)) * 1000),
+        )
+
+    if "Low-pass filter applied" in comment:
+        match = re.match(
+            (
+                r"Low-pass filter applied with cut-off frequency of "
+                r"(\d{1-4}\.\d)kHz"
+            ),
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.LOW_PASS,
+            lower_frequency_hz=None,
+            higher_frequency_hz=int(float(match.group(1)) * 1000),
+        )
+
+    if "High-pass filter applied" in comment:
+        match = re.match(
+            (
+                r"High-pass filter applied with cut-off frequency "
+                r"of (\d{1-4}\.\d)kHz"
+            ),
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.HIGH_PASS,
+            lower_frequency_hz=int(float(match.group(1)) * 1000),
+            higher_frequency_hz=None,
+        )
+
+    raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+
+def _parse_timezone(comment: str) -> tz:
+    if comment == "":
+        timezone = tz(td(0))
+    elif ":" not in comment:
+        timezone = tz(td(hours=int(comment)))
+    else:
+        hours, minutes = comment.split(":")
+        timezone = tz(td(hours=int(hours), minutes=int(minutes)))
+    return timezone
+
+
+def _parse_recording_state_1_4_0(comment: Optional[str]) -> RecordingState:
+    if comment is None:
+        return RecordingState.RECORDING_OKAY
+
+    if "low voltage" in comment:
+        return RecordingState.SUPPLY_VOLTAGE_LOW
+
+    if "change of switch position" in comment:
+        return RecordingState.SWITCH_CHANGED
+
+    raise MessageFormatError(f"Unexpected recording state: {comment}")
+
+
+def _parse_battery_state_1_4_0(comment: str) -> Tuple[bool, float]:
+    low_battery = False
+    if comment == "less than 2.5":
+        low_battery = True
+        battery_state_volts = 2.5
+    elif comment == "greater than 4.9":
+        battery_state_volts = 5.0
+    else:
+        battery_state_volts = float(comment)
+    return low_battery, battery_state_volts
+
+
+def parse_comment_version_1_4_0(comment: str) -> CommentMetadataV3:
+    """Parse the comment string of 1.4.0 firmware.
+
+    Also valid for version 1.4.1.
+
+    Parameters
+    ----------
+    comment : str
+
+    Returns
+    -------
+    metadata: CommentMetadataV3
+
+    """
+    match = COMMENT_REGEX_1_4_0.fullmatch(comment)
+
+    if match is None:
+        raise MessageFormatError(
+            "Comment string does not match expected format."
+        )
+
+    datetime = dt.strptime(match.group(1), DATE_FORMAT)
+    timezone = _parse_timezone(match.group(2))
+    audiomoth_id = match.group(3)
+    gain = _gain_mapping[match.group(4)]
+    temperature_c = float(match.group(6))
+    low_battery, battery_state_volts = _parse_battery_state_1_4_0(
+        match.group(5)
+    )
+    amplitude_threshold = _parse_amplitude_threshold_1_4_0(match.group(7))
+    frequency_filter = _parse_frequency_filter_1_4_0(match.group(8))
+    recording_state = _parse_recording_state_1_4_0(match.group(9))
+
+    return CommentMetadataV3(
+        datetime=datetime,
+        timezone=timezone,
+        audiomoth_id=audiomoth_id,
+        gain=gain,
+        comment=comment,
+        low_battery=low_battery,
+        battery_state_v=battery_state_volts,
+        recording_state=recording_state,
+        temperature_c=temperature_c,
+        amplitude_threshold=amplitude_threshold,
+        frequency_filter=frequency_filter,
+    )
+
+
+def _parse_recording_state_1_4_2(comment: Optional[str]) -> RecordingState:
+    if comment is None:
+        return RecordingState.RECORDING_OKAY
+
+    if "low voltage" in comment:
+        return RecordingState.SUPPLY_VOLTAGE_LOW
+
+    if "file size limit" in comment:
+        return RecordingState.FILE_SIZE_LIMITED
+
+    if "change of switch position" in comment:
+        return RecordingState.SWITCH_CHANGED
+
+    raise MessageFormatError(f"Unexpected recording state: {comment}")
+
+
+COMMENT_REGEX_1_4_2 = re.compile(
+    r"Recorded at "
+    r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
+    r"\(UTC([\+\-]?\d{0,2}):?\d{0,2}\) by "  # timezone
+    r"AudioMoth ([0-9A-z]{16}) "  # audiomoth id
+    r"at (low|low-medium|medium|medium-high|high) gain setting "  # gain
+    "while battery state was "
+    r"(less than 2\.5|greater than 4\.9|\d\.\d)V "  # battery state
+    r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
+    r"( Amplitude threshold was \d{1-4}\.)?"  # threshold
+    r"( Band-pass filter applied with cut-off frequencies of \d\.\dkHz and "
+    r"\d\.\dkHz| Low-pass filter applied with cut-off frequency of \d\.\dkHz "
+    r"| High-pass filter applied with cut-off frequency of \d\.\dkHz)?"
+    r"( Recording cancelled before completion due to "
+    r"(low voltage|change of switch position|file size limit)\.)?"
+)
+
+
+def parse_comment_version_1_4_2(comment: str) -> CommentMetadataV3:
+    """Parse the comment string of 1.4.2 firmware.
+
+    Also valid for version 1.4.3.
+
+    Parameters
+    ----------
+    comment : str
+
+    Returns
+    -------
+    metadata: CommentMetadataV3
+
+    """
+    match = COMMENT_REGEX_1_4_2.fullmatch(comment)
+
+    if match is None:
+        raise MessageFormatError(
+            "Comment string does not match expected format."
+        )
+
+    datetime = dt.strptime(match.group(1), DATE_FORMAT)
+    timezone = _parse_timezone(match.group(2))
+    audiomoth_id = match.group(3)
+    gain = _gain_mapping[match.group(4)]
+    temperature_c = float(match.group(6))
+    low_battery, battery_state_volts = _parse_battery_state_1_4_0(
+        match.group(5)
+    )
+    amplitude_threshold = _parse_amplitude_threshold_1_4_0(match.group(7))
+    frequency_filter = _parse_frequency_filter_1_4_0(match.group(8))
+    recording_state = _parse_recording_state_1_4_2(match.group(9))
+
+    return CommentMetadataV3(
+        datetime=datetime,
+        timezone=timezone,
+        audiomoth_id=audiomoth_id,
+        gain=gain,
+        comment=comment,
+        low_battery=low_battery,
+        battery_state_v=battery_state_volts,
+        recording_state=recording_state,
+        temperature_c=temperature_c,
+        amplitude_threshold=amplitude_threshold,
+        frequency_filter=frequency_filter,
+    )
+
+
 parsers: Dict[str, Callable[[str], CommentMetadata]] = {
     "1.0": parse_comment_version_1_0,
     "1.0.1": parse_comment_version_1_0_1,
     "1.2.0": parse_comment_version_1_2_0,
     "1.2.1": parse_comment_version_1_2_1,
     "1.2.2": parse_comment_version_1_2_2,
+    "1.4.0": parse_comment_version_1_4_0,
+    "1.4.2": parse_comment_version_1_4_2,
 }
 
 
