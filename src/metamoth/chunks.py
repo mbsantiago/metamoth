@@ -17,7 +17,7 @@ import os
 from dataclasses import dataclass, field
 from typing import BinaryIO, List, Optional, Union
 
-PathLike = Union[os.PathLike, str]
+PathLike = Union[os.PathLike, str]  # pylint: disable=no-member
 
 
 CHUNKS_WITH_SUBCHUNKS = ["RIFF", "LIST"]
@@ -108,7 +108,7 @@ def _read_chunk(riff: BinaryIO) -> Chunk:
     if chunk_id in CHUNKS_WITH_SUBCHUNKS:
         chunk.subchunks = _get_subchunks(riff, size - 4)
     else:
-        riff.seek(size, os.SEEK_CUR)
+        riff.seek(size, os.SEEK_CUR)  # pylint: disable=no-member
 
     return chunk
 

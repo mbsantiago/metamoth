@@ -2,7 +2,7 @@
 import os
 from typing import Union
 
-PathLike = Union[os.PathLike, str]
+PathLike = Union[os.PathLike, str]  # pylint: disable=no-member
 
 
 def is_wav_filename(filename: PathLike) -> bool:
