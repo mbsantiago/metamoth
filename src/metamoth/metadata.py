@@ -181,7 +181,7 @@ class CommentMetadataV5(CommentMetadata):
     frequency_filter: FrequencyFilter
     """Frequency filter applied to the recording."""
 
-    deployment_id: Optional[int]
+    deployment_id: Optional[str]
     """Deployment ID of the AudioMoth."""
 
     external_microphone: bool

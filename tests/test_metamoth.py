@@ -2,12 +2,12 @@
 
 """Tests for `metamoth` package."""
 
+import os
 from datetime import datetime as dt
 from datetime import timezone as tz
-import os
 
-from metamoth.enums import GainSetting, RecordingState
 from metamoth import parse_metadata
+from metamoth.enums import GainSetting, RecordingState
 
 PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(PACKAGE_DIR, "data")

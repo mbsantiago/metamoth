@@ -515,13 +515,13 @@ def _get_amplitude_threshold_1_6_0(
         enable_amplitude_threshold_decibel_scale
         and not enable_amplitude_threshold_percentage_scale
     ):
-        return _format_decibels(amplitude_threshold_decibels)
+        threshold_str = _format_decibels(amplitude_threshold_decibels)
 
     if (
         not enable_amplitude_threshold_decibel_scale
         and enable_amplitude_threshold_percentage_scale
     ):
-        return _format_percentage(
+        threshold_str = _format_percentage(
             amplitude_threshold_percentage_mantissa,
             amplitude_threshold_percentage_exponent,
         )
@@ -536,7 +536,7 @@ def _get_recording_state_1_6_0(recording_state: RecordingState) -> str:
     if recording_state == RecordingState.RECORDING_OKAY:
         return ""
 
-    cause = "change of switch position"
+    cause = "switch position change"
 
     if recording_state == RecordingState.MICROPHONE_CHANGED:
         cause = "microphone change"
@@ -548,6 +548,17 @@ def _get_recording_state_1_6_0(recording_state: RecordingState) -> str:
         cause = "file size limit"
 
     return f" Recording stopped due to {cause}."
+
+
+def _get_battery_state_1_6_0(battery_state: ExtendedBatteryState) -> str:
+    if battery_state == ExtendedBatteryState.AM_EXT_BAT_LOW:
+        return "battery was less than 2.5V"
+
+    if battery_state == ExtendedBatteryState.AM_EXT_BAT_FULL:
+        return "battery was greater than 4.9V"
+
+    voltage = battery_state.volts
+    return f"battery was {voltage:01.01f}V"
 
 
 def generate_comment_v1_6_0(
@@ -569,7 +580,7 @@ def generate_comment_v1_6_0(
     microphone_str = _get_microphone_1_5_0(external_microphone)
     artist_str = _get_artist_1_5_0(serial_number, deployment_id)
     gain_str = _get_gain_setting_1_6_0(config.gain)
-    battery_str = _get_battery_state_1_4_0(extended_battery_state)
+    battery_str = _get_battery_state_1_6_0(extended_battery_state)
     temperature_str = _get_temperature_1_4_0(temperature)
     filter_str = _get_frequency_filter_1_4_0(
         config.lower_filter_freq,

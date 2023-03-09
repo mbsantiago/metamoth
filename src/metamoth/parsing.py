@@ -13,10 +13,13 @@ from metamoth.metadata import (
     CommentMetadataV1,
     CommentMetadataV2,
     CommentMetadataV3,
+    CommentMetadataV5,
     FrequencyFilter,
 )
 
 DATE_FORMAT = "%H:%M:%S %d/%m/%Y"
+
+MAX_AMPLITUDE = 32768
 
 
 class MessageFormatError(Exception):
@@ -553,7 +556,7 @@ COMMENT_REGEX_1_4_2 = re.compile(
 def parse_comment_version_1_4_2(comment: str) -> CommentMetadataV3:
     """Parse the comment string of 1.4.2 firmware.
 
-    Also valid for version 1.4.3.
+    Also valid for versions 1.4.3 and 1.4.4.
 
     Parameters
     ----------
@@ -598,6 +601,157 @@ def parse_comment_version_1_4_2(comment: str) -> CommentMetadataV3:
     )
 
 
+COMMENT_REGEX_1_6_0 = re.compile(
+    r"Recorded at "
+    r"(\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "  # date time
+    r"\(UTC([\+\-]?\d{0,2}:?\d{0,2})\) "  # timezone
+    r"(during deployment [0-9A-z]{16}|by AudioMoth [0-9A-z]{16}) "
+    r"(using external microphone )?"
+    r"at (low|low-medium|medium|medium-high|high) gain "  # gain
+    "while battery was "
+    r"(less than 2\.5|greater than 4\.9|\d\.\d)V "  # battery state
+    r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
+    r"( Amplitude threshold was (?:\d{1,4}|\d{1,4}\.?\d{0,4}%|-?\d{1,4} dB) "
+    r"with \d{1,4}s minimum trigger duration\.)?"  # threshold
+    r"( Band-pass filter applied with cut-off frequencies of \d{1,4}\.\dkHz "
+    r"and \d{1,4}\.\dkHz\.| Low-pass filter applied with cut-off frequency of "
+    r"\d{1,4}\.\dkHz\."
+    r"| High-pass filter applied with cut-off frequency of \d{1,4}\.\dkHz\.)?"
+    r"( Recording stopped due to (low voltage|microphone change"
+    r"|switch position change|file size limit)\.)?"
+)
+
+
+def _parse_artist_and_deployment_id(
+    comment: str,
+) -> Tuple[str, Optional[str]]:
+    """Parse artist and deployment id from comment string."""
+    deployment_id = None
+    audiomoth_id = comment[-16:]
+    if "during deployment" in comment:
+        deployment_id = comment[-16:]
+    return audiomoth_id, deployment_id
+
+
+def db_to_amplitude(db_value: float) -> int:
+    """Convert dB values to amplitude threshold value."""
+    return round(10 ** (db_value / 20) * MAX_AMPLITUDE)
+
+
+def percentage_to_amplitude(percentage: float) -> int:
+    """Convert percentage values to amplitude threshold value."""
+    return round(percentage / 100 * MAX_AMPLITUDE)
+
+
+AMPLITUDE_REGEX_1_6_0 = re.compile(
+    r" Amplitude threshold was (\d{1,4}|\d{1,4}\.?\d{0,4}%|-?\d{1,4} dB)"
+    r" with (\d{1,4})s minimum trigger duration\."
+)
+
+
+def _parse_amplitude_threshold_1_6_0(
+    comment: Optional[str],
+) -> Tuple[AmplitudeThreshold, int]:
+    """Parse the amplitude threshold from the comment string."""
+    if comment is None:
+        return AmplitudeThreshold(enabled=False, threshold=0), 0
+
+    match = re.match(
+        AMPLITUDE_REGEX_1_6_0,
+        comment,
+    )
+
+    if match is None:
+        raise MessageFormatError(f"Unexpected amplitude threshold: {comment}")
+
+    amplitude_threshold = match.group(1)
+    if "%" in amplitude_threshold:
+        amplitude = percentage_to_amplitude(float(amplitude_threshold[:-1]))
+    elif "dB" in amplitude_threshold:
+        amplitude = db_to_amplitude(float(amplitude_threshold[:-2]))
+    else:
+        amplitude = int(amplitude_threshold)
+
+    trigger_duration = int(match.group(2))
+
+    return (
+        AmplitudeThreshold(enabled=True, threshold=amplitude),
+        trigger_duration,
+    )
+
+
+def _parse_recording_state_1_6_0(comment: Optional[str]) -> RecordingState:
+    """Parse the recording state from the comment string of 1.6.0 firmware."""
+    if comment is None:
+        return RecordingState.RECORDING_OKAY
+
+    if "low voltage" in comment:
+        return RecordingState.SUPPLY_VOLTAGE_LOW
+
+    if "file size limit" in comment:
+        return RecordingState.FILE_SIZE_LIMITED
+
+    if "switch position change" in comment:
+        return RecordingState.SWITCH_CHANGED
+
+    raise MessageFormatError(f"Unexpected recording state: {comment}")
+
+
+def parse_comment_version_1_6_0(comment: str) -> CommentMetadataV5:
+    """Parse the comment string of 1.6.0 firmware.
+
+    Parameters
+    ----------
+    comment : str
+
+    Returns
+    -------
+    metadata: CommentMetadataV5
+
+    """
+    match = COMMENT_REGEX_1_6_0.fullmatch(comment)
+
+    if match is None:
+        raise MessageFormatError(
+            "Comment string does not match expected format."
+        )
+
+    datetime = dt.strptime(match.group(1), DATE_FORMAT)
+    timezone = _parse_timezone(match.group(2))
+    audiomoth_id, deployment_id = _parse_artist_and_deployment_id(
+        match.group(3)
+    )
+    external_microphone = match.group(4) is not None
+    gain = _gain_mapping[match.group(5)]
+    low_battery, battery_state_volts = _parse_battery_state_1_4_0(
+        match.group(6)
+    )
+    temperature_c = float(match.group(7))
+    (
+        amplitude_threshold,
+        minimum_trigger_duration_s,
+    ) = _parse_amplitude_threshold_1_6_0(match.group(8))
+    frequency_filter = _parse_frequency_filter_1_4_0(match.group(9))
+    recording_state = _parse_recording_state_1_6_0(match.group(10))
+
+    return CommentMetadataV5(
+        datetime=datetime,
+        timezone=timezone,
+        audiomoth_id=audiomoth_id,
+        gain=gain,
+        comment=comment,
+        low_battery=low_battery,
+        battery_state_v=battery_state_volts,
+        recording_state=recording_state,
+        temperature_c=temperature_c,
+        amplitude_threshold=amplitude_threshold,
+        frequency_filter=frequency_filter,
+        deployment_id=deployment_id,
+        external_microphone=external_microphone,
+        minimum_trigger_duration_s=minimum_trigger_duration_s,
+    )
+
+
 parsers: Dict[str, Callable[[str], CommentMetadata]] = {
     "1.0": parse_comment_version_1_0,
     "1.0.1": parse_comment_version_1_0_1,
@@ -606,6 +760,7 @@ parsers: Dict[str, Callable[[str], CommentMetadata]] = {
     "1.2.2": parse_comment_version_1_2_2,
     "1.4.0": parse_comment_version_1_4_0,
     "1.4.2": parse_comment_version_1_4_2,
+    "1.6.0": parse_comment_version_1_6_0,
 }
 
 
