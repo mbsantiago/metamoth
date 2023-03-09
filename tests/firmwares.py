@@ -34,6 +34,8 @@ def _get_gain_setting_1_0(gain: int) -> str:
 
 
 def _get_battery_state_1_0(battery_state: BatteryState) -> str:
+    """Get the battery state as a string for firmware version 1.0."""
+
     if battery_state == BatteryState.AM_BATTERY_LOW:
         return "battery state was < 3.6V"
 
