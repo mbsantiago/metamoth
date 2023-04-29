@@ -18,7 +18,7 @@ formatting = [
 lsp = [
     "pyright>=1.1.297",
     "python-lsp-server[all]>=1.2.1",
-    "python-lsp-ruff>=1.2.0",
+    "python-lsp-ruff>=1.2.1",
     "ruff>=0.0.254",
 ]
 debug = [
@@ -27,7 +27,7 @@ debug = [
 
 [project]
 name = "metamoth"
-version = "1.2.0"
+version = "1.2.1"
 description = "Simple Python utility to parse AudioMoth metadata"
 authors = [
     { name = "Santiago Martinez Balvanera", email = "santiago.balvanera.20@ucl.ac.uk" },
