@@ -618,10 +618,10 @@ COMMENT_REGEX_1_6_0 = re.compile(
     r"and temperature was (-?\d{1,2}\.\d)C."  # temperature
     r"( Amplitude threshold was (?:\d{1,4}|\d{1,4}\.?\d{0,4}%|-?\d{1,4} dB) "
     r"with \d{1,4}s minimum trigger duration\.)?"  # threshold
-    r"( Band-pass filter applied with cut-off frequencies of \d{1,4}\.\dkHz "
-    r"and \d{1,4}\.\dkHz\.| Low-pass filter applied with cut-off frequency of "
-    r"\d{1,4}\.\dkHz\."
-    r"| High-pass filter applied with cut-off frequency of \d{1,4}\.\dkHz\.)?"
+    r"( Band-pass filter with frequencies of \d{1,4}\.\dkHz "
+    r"and \d{1,4}\.\dkHz applied\.| Low-pass filter with frequency of "
+    r"\d{1,4}\.\dkHz applied\."
+    r"| High-pass filter with frequency of \d{1,4}\.\dkHz applied\.)?"
     r"( Recording stopped due to (low voltage|microphone change"
     r"|switch position change|file size limit)\.)?"
 )
@@ -702,6 +702,70 @@ def _parse_recording_state_1_6_0(comment: Optional[str]) -> RecordingState:
     raise MessageFormatError(f"Unexpected recording state: {comment}")
 
 
+def _parse_frequency_filter_1_6_0(comment: Optional[str]) -> FrequencyFilter:
+    """Parse the frequency filter from the comment string."""
+    if comment is None:
+        return FrequencyFilter(
+            type=FilterType.NO_FILTER,
+            lower_frequency_hz=None,
+            higher_frequency_hz=None,
+        )
+
+    if "Band-pass filter" in comment:
+        match = re.match(
+            r" Band-pass filter with frequencies of "
+            r"(\d{1,4}\.\d)kHz and (\d{1,4}\.\d)kHz applied\.",
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.BAND_PASS,
+            lower_frequency_hz=int(float(match.group(1)) * 1000),
+            higher_frequency_hz=int(float(match.group(2)) * 1000),
+        )
+
+    if "Low-pass filter" in comment:
+        match = re.match(
+            (
+                r" Low-pass filter with frequency of "
+                r"(\d{1,4}\.\d)kHz applied\."
+            ),
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.LOW_PASS,
+            lower_frequency_hz=None,
+            higher_frequency_hz=int(float(match.group(1)) * 1000),
+        )
+
+    if "High-pass filter" in comment:
+        match = re.match(
+            (
+                r" High-pass filter with frequency "
+                r"of (\d{1,4}\.\d)kHz applied\."
+            ),
+            comment,
+        )
+
+        if match is None:
+            raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+        return FrequencyFilter(
+            type=FilterType.HIGH_PASS,
+            lower_frequency_hz=int(float(match.group(1)) * 1000),
+            higher_frequency_hz=None,
+        )
+
+    raise MessageFormatError(f"Unexpected frequency filter: {comment}")
+
+
 def parse_comment_version_1_6_0(comment: str) -> CommentMetadataV5:
     """Parse the comment string of 1.6.0 firmware.
 
@@ -736,7 +800,7 @@ def parse_comment_version_1_6_0(comment: str) -> CommentMetadataV5:
         amplitude_threshold,
         minimum_trigger_duration_s,
     ) = _parse_amplitude_threshold_1_6_0(match.group(8))
-    frequency_filter = _parse_frequency_filter_1_4_0(match.group(9))
+    frequency_filter = _parse_frequency_filter_1_6_0(match.group(9))
     recording_state = _parse_recording_state_1_6_0(match.group(10))
 
     return CommentMetadataV5(

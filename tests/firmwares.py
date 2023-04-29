@@ -477,7 +477,9 @@ def _format_decibels(decibels: int) -> str:
 
 
 def _format_percentage(mantissa: int, exponent: int) -> str:
-    """An almost verbatim copy of the formatPercentage in the source code.
+    """Convert a mantissa and exponent to a percentage.
+
+    An almost verbatim copy of the formatPercentage in the source code.
 
     This function should take an integer mantissa and an exponent and
     return the decimal representation.
@@ -562,6 +564,37 @@ def _get_battery_state_1_6_0(battery_state: ExtendedBatteryState) -> str:
     return f"battery was {voltage:01.01f}V"
 
 
+def _get_frequency_filter_1_6_0(
+    lower_filter_freq: int, higher_filter_freq: int
+) -> str:
+    """Get the frequency filter string.
+
+    We assume that the filter frequencies are in units of Hz.
+    """
+    if lower_filter_freq == 0 and higher_filter_freq == 0:
+        return ""
+
+    low_freq = lower_filter_freq / 1000
+    high_freq = higher_filter_freq / 1000
+
+    if lower_filter_freq > 0 and higher_filter_freq > 0:
+        return (
+            " Band-pass filter with frequencies of "
+            f"{low_freq:01.01f}kHz and {high_freq:01.01f}kHz applied."
+        )
+
+    if higher_filter_freq > 0:
+        return (
+            " Low-pass filter with frequency of "
+            f"{high_freq:01.01f}kHz applied."
+        )
+
+    return (
+        " High-pass filter with frequency of "
+        f"{low_freq:01.01f}kHz applied."
+    )
+
+
 def generate_comment_v1_6_0(
     time: datetime.datetime,
     serial_number: int,
@@ -583,7 +616,7 @@ def generate_comment_v1_6_0(
     gain_str = _get_gain_setting_1_6_0(config.gain)
     battery_str = _get_battery_state_1_6_0(extended_battery_state)
     temperature_str = _get_temperature_1_4_0(temperature)
-    filter_str = _get_frequency_filter_1_4_0(
+    filter_str = _get_frequency_filter_1_6_0(
         config.lower_filter_freq,
         config.higher_filter_freq,
     )
@@ -658,7 +691,7 @@ def generate_comment_v1_7_0(
     gain_str = _get_gain_setting_1_7_0(config.gain)
     battery_str = _get_battery_state_1_4_0(extended_battery_state)
     temperature_str = _get_temperature_1_4_0(temperature)
-    filter_str = _get_frequency_filter_1_4_0(
+    filter_str = _get_frequency_filter_1_6_0(
         config.lower_filter_freq,
         config.higher_filter_freq,
     )
@@ -736,7 +769,7 @@ def generate_comment_v1_8_0(
         config.frequency_trigger_threshold_percentage_exponent,
         config.minimum_trigger_duration,
     )
-    filter_str = _get_frequency_filter_1_4_0(
+    filter_str = _get_frequency_filter_1_6_0(
         config.lower_filter_freq,
         config.higher_filter_freq,
     )
