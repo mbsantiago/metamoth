@@ -129,6 +129,7 @@ def test_can_parse_comment_from_version_1_0_1(
     config=st.builds(
         Config1_2_0,
         gain=st.integers(0, 4),
+        timezone=st.integers(-12, 12),
     ),
 )
 def test_can_parse_comment_from_version_1_2_0(

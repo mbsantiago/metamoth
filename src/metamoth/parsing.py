@@ -128,7 +128,8 @@ def parse_comment_version_1_0_1(comment: str) -> CommentMetadataV1:
 
 
 COMMENT_REGEX_1_2_0 = re.compile(
-    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) \(UTC\) by "
+    r"Recorded at (\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) "
+    r"\(UTC([\+\-]?\d{0,2})\) by "  # timezone
     r"AudioMoth ([0-9A-z]{16}) at gain setting (\d) while battery "
     r"state was ([<>]?\s?[0-9\.]*)V."
 )
@@ -154,21 +155,25 @@ def parse_comment_version_1_2_0(comment: str) -> CommentMetadataV1:
         )
 
     low_battery = False
-    if match.group(4).startswith("<"):
+    if match.group(5).startswith("<"):
         low_battery = True
         battery_state_volts = 3.6
 
-    elif match.group(4).startswith(">"):
+    elif match.group(5).startswith(">"):
         battery_state_volts = 5.0
 
     else:
-        battery_state_volts = float(match.group(4))
+        battery_state_volts = float(match.group(5))
+
+    utc_offset = 0
+    if match.group(2) != "":
+        utc_offset = int(match.group(2))
 
     return CommentMetadataV1(
         datetime=dt.strptime(match.group(1), DATE_FORMAT),
-        timezone=tz(td(0)),
-        audiomoth_id=match.group(2),
-        gain=GainSetting(int(match.group(3))),
+        timezone=tz(td(hours=utc_offset)),
+        audiomoth_id=match.group(3),
+        gain=GainSetting(int(match.group(4))),
         comment=comment,
         low_battery=low_battery,
         battery_state_v=battery_state_volts,
