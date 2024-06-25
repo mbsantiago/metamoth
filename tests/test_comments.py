@@ -27,9 +27,7 @@ def test_get_comment_from_wav_file():
 
 def test_get_comment_fails_for_non_audiomoth_file():
     """Test that comment cannot be extracted from non-AudioMoth WAV file."""
-    with (
-        pytest.raises(ValueError),
-        open(os.path.join(DATA_DIR, "non_am.wav"), "rb") as wav,
-    ):
-        chunk = parse_into_chunks(wav)
-        get_am_comment(wav, chunk)
+    with pytest.raises(ValueError):
+        with open(os.path.join(DATA_DIR, "non_am.wav"), "rb") as wav:
+            chunk = parse_into_chunks(wav)
+            get_am_comment(wav, chunk)
