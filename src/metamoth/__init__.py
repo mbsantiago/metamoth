@@ -9,7 +9,7 @@ from metamoth.metamoth import parse_metadata
 
 __author__ = """Santiago Martinez Balvanera"""
 __email__ = "santiago.balvanera.20@ucl.ac.uk"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 
 __all__ = ["parse_metadata"]

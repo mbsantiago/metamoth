@@ -1,6 +1,6 @@
 [project]
 name = "metamoth"
-version = "1.2.0"
+version = "1.2.1"
 description = "Simple Python utility to parse AudioMoth metadata"
 authors = [
     { name = "Santiago Martinez Balvanera", email = "santiago.balvanera.20@ucl.ac.uk" },
