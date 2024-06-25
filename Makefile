@@ -1,6 +1,10 @@
 .PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8 lint/black
 .DEFAULT_GOAL := help
 
+.ONESHELL:
+ENV_PREFIX=.venv/bin/
+PROJECT_NAME=src/metamoth
+
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 
@@ -47,45 +51,42 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
-lint/flake8: ## check style with flake8
-	flake8 src
 
-lint/pylint: ## check style with pylint
-	pylint src
+fmt:              ## Format code using black & isort.
+	$(ENV_PREFIX)ruff format $(PROJECT_NAME)/
+	$(ENV_PREFIX)ruff format tests/
 
-lint/pycodestyle: ## check style with pycodestyle
-	pycodestyle src
+lint-pyright:
+	$(ENV_PREFIX)pyright $(PROJECT_NAME)/
 
-lint/pydocstyle: ## check style with pydocstyle
-	pydocstyle src
+lint-ruff:
+	$(ENV_PREFIX)ruff check $(PROJECT_NAME)/
+	$(ENV_PREFIX)ruff check tests/ --ignore "D,E402"
 
-lint/black: ## check style with black
-	black --check src tests
+lint: lint-pyright lint-ruff
 
-lint: lint/flake8 lint/black lint/pycodestyle lint/pydocstyle lint/pylint ## check style
+test-watch:    ## Run tests and generate coverage report.
+	$(ENV_PREFIX)ptw --runner "$(ENV_PREFIX)coverage run -m pytest -l --tb=long tests/" $(PROJECT_NAME)/ tests/
 
-test: ## run tests quickly with the default Python
-	pytest
-
-test-all: ## run tests on every Python version with tox
-	tox
+test:    ## Run tests and generate coverage report.
+	$(ENV_PREFIX)pytest -s -vvv -l --tb=long --maxfail=1 tests/
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source src -m pytest
-	coverage report -m
-	coverage html
+	$(ENV_PREFIX)coverage run --source src -m pytest
+	$(ENV_PREFIX)coverage report -m
+	$(ENV_PREFIX)coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/metamoth.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -M -o docs/ src/metamoth
+	$(ENV_PREFIX)sphinx-apidoc -M -o docs/ src/metamoth
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	$(ENV_PREFIX)watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 release: dist ## package and upload a release
 	twine upload dist/*

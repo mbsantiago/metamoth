@@ -17,11 +17,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pylint pycodestyle pydocstyle black flake8
+          pip install ruff pyright
       - name: Analysing the code with pylint
         run: |
-          black --check src
-          pylint src
-          flake8 src
-          pycodestyle src
-          pydocstyle src
+          ruff check src
+          pyright src

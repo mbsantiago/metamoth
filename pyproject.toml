@@ -5,8 +5,8 @@ description = "Simple Python utility to parse AudioMoth metadata"
 authors = [
     { name = "Santiago Martinez Balvanera", email = "santiago.balvanera.20@ucl.ac.uk" },
 ]
-dependencies = ['dataclasses; python_version < "3.7"']
-requires-python = ">=3.6"
+dependencies = []
+requires-python = ">=3.7"
 readme = "README.rst"
 license = { text = "MIT license" }
 
@@ -31,7 +31,7 @@ dev-dependencies = [
 
 [tool.ruff]
 line-length = 79
-target-version = "py39"
+target-version = "py37"
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -48,4 +48,4 @@ venvPath = "."
 venv = ".venv"
 exclude = [".venv"]
 include = ["src"]
-pythonVersion = "3.9"
+pythonVersion = "3.7"
