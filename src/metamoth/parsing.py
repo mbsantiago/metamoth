@@ -1,4 +1,5 @@
 """Functions for parsing the comment string of AudioMoth recordings."""
+
 import re
 from dataclasses import asdict
 from datetime import datetime as dt

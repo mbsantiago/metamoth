@@ -1,4 +1,5 @@
 """Enums for the AudioMoth configurations and state."""
+
 from enum import Enum, auto
 
 __all__ = [

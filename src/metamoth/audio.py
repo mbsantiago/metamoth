@@ -1,4 +1,5 @@
 """Audio file utilities."""
+
 import os
 from typing import Union
 

@@ -3,6 +3,7 @@
 This module contains the AMMetadata class and its subclasses for different
 firmware versions.
 """
+
 # pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
 from datetime import datetime as dt

@@ -1,4 +1,5 @@
 """Main module."""
+
 import os
 from typing import Union
 

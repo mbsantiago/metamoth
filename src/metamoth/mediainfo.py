@@ -4,6 +4,7 @@ The WAV file must be a PCM WAV file. The WAV file must have a fmt chunk
 and a data chunk. The WAV file must have a samplerate and channels
 information in the fmt chunk.
 """
+
 from dataclasses import dataclass
 from typing import BinaryIO, Tuple
 
@@ -74,8 +75,8 @@ def get_media_info(wav: BinaryIO, chunk: Chunk) -> MediaInfo:
     -------
     MediaInfo
     """
-    fmt_chunk = chunk.subchunks[0]
-    data_chunk = chunk.subchunks[2]
+    fmt_chunk = chunk.subchunks["fmt "]
+    data_chunk = chunk.subchunks["data"]
     samplerate, channels = read_samplerate_and_channels(wav, fmt_chunk)
     samples = data_chunk.size // (channels * 2)
     duration = samples / samplerate

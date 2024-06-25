@@ -46,17 +46,15 @@ def get_comment_chunk(chunk: Chunk) -> Chunk:
     ValueError
         If the comment chunk is not found.
     """
-    for sbchunk in chunk.subchunks:
-        if sbchunk.chunk_id == "LIST":
-            break
-    else:
+    if "LIST" not in chunk.subchunks:
         raise ValueError("No LIST chunk found.")
 
-    for subsubchunk in sbchunk.subchunks:
-        if subsubchunk.chunk_id == "ICMT":
-            return subsubchunk
+    sbchunk = chunk.subchunks["LIST"]
 
-    raise ValueError("No comment chunk found.")
+    if "ICMT" not in sbchunk.subchunks:
+        raise ValueError("No ICMT chunk found.")
+
+    return sbchunk.subchunks["ICMT"]
 
 
 def get_am_comment(wav: BinaryIO, chunk: Chunk) -> str:

@@ -1,4 +1,5 @@
 """Functions for reading the artist chunk from a WAV file."""
+
 from typing import BinaryIO, Optional
 
 from metamoth.chunks import Chunk
@@ -41,17 +42,12 @@ def get_artist_chunk(chunk: Chunk) -> Optional[Chunk]:
     Chunk
         The artist chunk. If the chunk is not found, returns None.
     """
-    for subchunk in chunk.subchunks:
-        if subchunk.chunk_id == "LIST":
-            break
-    else:
+    list_chunk = chunk.subchunks.get("LIST")
+
+    if list_chunk is None:
         return None
 
-    for subsubchunk in subchunk.subchunks:
-        if subsubchunk.chunk_id == "IART":
-            return subsubchunk
-
-    return None
+    return list_chunk.subchunks.get("IART")
 
 
 def get_audiomoth_id_from_artist(comment: str) -> str:

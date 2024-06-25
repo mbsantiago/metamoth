@@ -13,9 +13,10 @@ format is also used for storing other types of data, such as text, images,
 and metadata.
 
 """
+
 import os
 from dataclasses import dataclass, field
-from typing import BinaryIO, List, Optional, Union
+from typing import BinaryIO, Dict, Optional, Union
 
 PathLike = Union[os.PathLike, str]  # pylint: disable=no-member
 
@@ -48,10 +49,10 @@ class Chunk:
     size: int
     position: int
     identifier: Optional[str] = None
-    subchunks: List["Chunk"] = field(default_factory=list)
+    subchunks: Dict[str, "Chunk"] = field(default_factory=dict)
 
 
-def _get_subchunks(riff: BinaryIO, size: int) -> List[Chunk]:
+def _get_subchunks(riff: BinaryIO, size: int) -> Dict[str, Chunk]:
     """Return the subchunks of a RIFF chunk.
 
     Assume the file pointer is at the beginning of the subchunks.
@@ -70,10 +71,10 @@ def _get_subchunks(riff: BinaryIO, size: int) -> List[Chunk]:
     """
     start_position = riff.tell()
 
-    subchunks = []
+    subchunks = {}
     while riff.tell() < start_position + size - 1:
         subchunk = _read_chunk(riff)
-        subchunks.append(subchunk)
+        subchunks[subchunk.chunk_id] = subchunk
     return subchunks
 
 

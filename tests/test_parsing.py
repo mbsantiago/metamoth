@@ -1,4 +1,5 @@
 """Test the parsing module."""
+
 import datetime
 import math
 from datetime import timedelta as td
@@ -7,7 +8,6 @@ from typing import Optional
 
 from hypothesis import given
 from hypothesis import strategies as st
-
 from metamoth.config import (
     Config1_0,
     Config1_2_0,

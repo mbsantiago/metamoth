@@ -1,4 +1,5 @@
 """Test the artist module."""
+
 import os
 
 from metamoth.artist import get_am_artist

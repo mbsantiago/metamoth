@@ -1,4 +1,5 @@
 """Test the chunks module."""
+
 import os
 
 from metamoth.chunks import parse_into_chunks
@@ -17,22 +18,22 @@ def test_parses_wavs_into_chunks():
     assert chunk.position == 0
     assert chunk.size == 7680184
     assert len(chunk.subchunks) == 3
-    assert chunk.subchunks[0].chunk_id == "fmt "
-    assert chunk.subchunks[0].identifier is None
-    assert chunk.subchunks[0].position == 12
-    assert chunk.subchunks[0].size == 16
-    assert chunk.subchunks[0].subchunks == []
-    assert chunk.subchunks[1].chunk_id == "LIST"
-    assert chunk.subchunks[1].identifier == "INFO"
-    assert chunk.subchunks[1].position == 36
-    assert chunk.subchunks[1].size == 140
-    assert len(chunk.subchunks[1].subchunks) == 1
-    assert chunk.subchunks[1].subchunks[0].chunk_id == "ICMT"
-    assert chunk.subchunks[1].subchunks[0].size == 128
-    assert chunk.subchunks[1].subchunks[0].identifier is None
-    assert chunk.subchunks[1].subchunks[0].subchunks == []
-    assert chunk.subchunks[2].chunk_id == "data"
-    assert chunk.subchunks[2].identifier is None
-    assert chunk.subchunks[2].position == 184
-    assert chunk.subchunks[2].size == 7680000
-    assert chunk.subchunks[2].subchunks == []
+    assert chunk.subchunks["fmt "].chunk_id == "fmt "
+    assert chunk.subchunks["fmt "].identifier is None
+    assert chunk.subchunks["fmt "].position == 12
+    assert chunk.subchunks["fmt "].size == 16
+    assert chunk.subchunks["fmt "].subchunks == {}
+    assert chunk.subchunks["LIST"].chunk_id == "LIST"
+    assert chunk.subchunks["LIST"].identifier == "INFO"
+    assert chunk.subchunks["LIST"].position == 36
+    assert chunk.subchunks["LIST"].size == 140
+    assert len(chunk.subchunks["LIST"].subchunks) == 1
+    assert chunk.subchunks["LIST"].subchunks["ICMT"].chunk_id == "ICMT"
+    assert chunk.subchunks["LIST"].subchunks["ICMT"].size == 128
+    assert chunk.subchunks["LIST"].subchunks["ICMT"].identifier is None
+    assert chunk.subchunks["LIST"].subchunks["ICMT"].subchunks == {}
+    assert chunk.subchunks["data"].chunk_id == "data"
+    assert chunk.subchunks["data"].identifier is None
+    assert chunk.subchunks["data"].position == 184
+    assert chunk.subchunks["data"].size == 7680000
+    assert chunk.subchunks["data"].subchunks == {}

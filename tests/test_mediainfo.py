@@ -1,4 +1,5 @@
 """Test the media info module."""
+
 import os
 import wave
 

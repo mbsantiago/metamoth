@@ -4,6 +4,7 @@ Metamoth is a Python package for parsing metadata from AudioMoth recordings. It
 provides a function to parse the metadata from a WAV file and returns an
 object with the metadata as attributes.
 """
+
 from metamoth.metamoth import parse_metadata
 
 __author__ = """Santiago Martinez Balvanera"""

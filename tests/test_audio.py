@@ -1,4 +1,5 @@
 """Test audio module"""
+
 import os
 
 from metamoth.audio import is_riff, is_wav, is_wav_filename

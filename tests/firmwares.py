@@ -1,4 +1,5 @@
 """Functions to generate comments for different firmware versions."""
+
 # pylint: disable=too-many-arguments,too-many-locals
 import datetime
 from typing import Optional
@@ -590,8 +591,7 @@ def _get_frequency_filter_1_6_0(
         )
 
     return (
-        " High-pass filter with frequency of "
-        f"{low_freq:01.01f}kHz applied."
+        " High-pass filter with frequency of " f"{low_freq:01.01f}kHz applied."
     )
 
 
